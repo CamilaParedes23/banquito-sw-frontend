@@ -4,6 +4,8 @@ import { User, UserRole } from '../types';
 
 import { AuthService } from '../services/authService';
 
+import { ENV } from '../config/env';
+
 
 
 interface AuthContextType {
@@ -24,6 +26,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
   const login = async (username: string, password: string) => {
+    // 🔥 MODO MOCK - Activado con VITE_MOCK_AUTH_ENABLED=true
+    if (ENV.MOCK_AUTH_ENABLED) {
+      const mockUsers: Record<string, User> = {
+        'admin': {
+          id: '1',
+          username: 'admin',
+          role: 'ADMIN',
+          companyName: 'BanQuito Admin',
+          companyRuc: '',
+          email: 'admin@banquito.com',
+        },
+        'empresa': {
+          id: '2',
+          username: 'empresa',
+          role: 'EMPRESA',
+          companyName: 'Empresa Demo S.A.',
+          companyRuc: '1234567890001',
+          email: 'empresa@demo.com',
+        },
+        'operador': {
+          id: '3',
+          username: 'operador',
+          role: 'OPERADOR',
+          companyName: 'BanQuito Operaciones',
+          companyRuc: '',
+          email: 'operador@banquito.com',
+        },
+      };
+
+      // Simular delay de red
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const user = mockUsers[username.toLowerCase()];
+      
+      if (user && password === 'admin') {
+        setUser(user);
+        return;
+      } else {
+        throw new Error('Credenciales incorrectas');
+      }
+    }
+
+    // Modo normal con backend
     try {
       const response = await AuthService.login(username, password);
 

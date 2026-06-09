@@ -188,45 +188,43 @@ export function BatchUpload() {
 
   return (
 
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-8">
 
-      <div className="flex items-center justify-between">
+      {/* Header con gradiente y horario */}
+      <div className="bg-gradient-to-r from-[#0D1B4B] to-[#1a2d5f] rounded-2xl p-8 text-white shadow-xl">
 
-        <div>
+        <div className="flex items-center justify-between gap-8">
 
-          <h1 className="text-3xl font-bold text-[#0D1B4B]">Nueva Operación</h1>
+          <div className="flex-1">
 
-          <p className="text-gray-500 mt-1">Cargue su archivo de pagos masivos según el estándar del banco.</p>
+            <h1 className="text-4xl font-bold mb-2">Cargar Lote de Pagos</h1>
 
-        </div>
+            <p className="text-blue-200 text-lg">Cargue su archivo de pagos masivos según el estándar del banco</p>
 
-      </div>
+          </div>
 
+          {/* Horario de procesamiento integrado */}
+          <div className={`px-6 py-4 rounded-xl border-2 flex items-center gap-4 ${
+            cutoffInfo.isPastCutoff ? 'bg-orange-500/20 border-orange-300' : 'bg-blue-500/20 border-blue-300'
+          }`}>
 
+            <Clock className="w-6 h-6 text-white" />
 
-      <div className={`p-5 rounded-xl border flex items-center gap-4 transition-all ${
+            <div>
 
-        cutoffInfo.isPastCutoff ? 'bg-orange-50 border-orange-100' : 'bg-blue-50 border-blue-100'
+              <p className="text-sm font-bold text-white">Horario de Procesamiento</p>
 
-      }`}>
+              <p className="text-xs text-blue-100">
 
-        <div className={`p-3 rounded-full ${cutoffInfo.isPastCutoff ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
+                Corte: <span className="font-bold">{cutoffInfo.horaCorte}</span>
 
-          <Clock className="w-6 h-6" />
+                {cutoffInfo.isPastCutoff && ` · Encolado: ${cutoffInfo.horaInicio}`}
 
-        </div>
+              </p>
 
-        <div className="flex-1">
+            </div>
 
-          <p className="text-sm font-bold text-gray-900">Horario de Procesamiento</p>
-
-          <p className="text-xs text-gray-600">
-
-            Corte para ejecución inmediata: <span className="font-bold">{cutoffInfo.horaCorte}</span>. 
-
-            {cutoffInfo.isPastCutoff && ` Su lote será encolado para las ${cutoffInfo.horaInicio}.`}
-
-          </p>
+          </div>
 
         </div>
 
@@ -461,7 +459,7 @@ export function BatchUpload() {
 
             disabled={!file || !accountNumber || isUploading}
 
-            className="px-10 py-3 bg-[#0D1B4B] text-white rounded-lg font-bold shadow-lg hover:bg-[#1e3a8a] disabled:opacity-20 transition-all flex items-center gap-3"
+            className="px-10 py-3 bg-gradient-to-r from-[#10b981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white rounded-xl font-semibold shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-3"
 
           >
 
