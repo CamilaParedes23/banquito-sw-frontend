@@ -35,7 +35,7 @@ jobs:
             VITE_ENVIRONMENT=${{ vars.VITE_ENVIRONMENT }}
             VITE_CORE_KONG_BASE_URL=${{ vars.VITE_CORE_KONG_BASE_URL }}
             VITE_DEFAULT_ADMIN_USER=${{ vars.VITE_DEFAULT_ADMIN_USER }}
-            VITE_BASE_PATH=/
+            VITE_BASE_PATH=/switch/
 
       - name: Trigger Infra Deploy
         run: |
