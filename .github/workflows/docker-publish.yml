@@ -44,7 +44,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/CamilaParedes23/banquito-infra/dispatches \
             -d '{
-              "event_type": "deploy-core-front",
+              "event_type": "deploy-switch-front",
               "client_payload": {
                 "service": "banca-web"
               }
