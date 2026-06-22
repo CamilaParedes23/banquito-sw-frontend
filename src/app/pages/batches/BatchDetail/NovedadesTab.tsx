@@ -1,5 +1,5 @@
 import { CheckCircle2, XCircle, AlertTriangle, Download, FileSpreadsheet } from 'lucide-react';
-import { LineStatus } from '../../../types';
+import { StatusBadge } from '../../../components/shared/StatusBadge';
 import { generateNovedadesPdf, reporteNovedadesToCsv, downloadTextFile } from '../../../utils/batchReportExport';
 
 interface NovedadesLine {
@@ -101,19 +101,7 @@ export function NovedadesTab({ isLoading, data, batchId }: NovedadesTabProps) {
                   ${Number(l.monto).toLocaleString('es-EC', { minimumFractionDigits: 2 })}
                 </td>
                 <td className="py-3 text-center">
-                  {l.estado === 'EXITOSA' ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold">
-                      <CheckCircle2 className="w-3 h-3" /> Exitosa
-                    </span>
-                  ) : l.estado === 'RECHAZADA' ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-[10px] font-bold">
-                      <XCircle className="w-3 h-3" /> Rechazada
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-[10px] font-bold">
-                      <AlertTriangle className="w-3 h-3" /> {l.estado}
-                    </span>
-                  )}
+                  <StatusBadge status={l.estado} size="sm" />
                 </td>
                 <td className="py-3 text-xs text-gray-500">{l.mensajeError || '-'}</td>
               </tr>

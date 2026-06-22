@@ -303,9 +303,9 @@ export function ClearingConsolidated() {
               onChange={(event) => setStatusFilter(event.target.value)}
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition focus:border-[#0D1B4B] focus:ring-2 focus:ring-[#0D1B4B]/10"
             >
-              <option value="CERRADO">CERRADO</option>
-              <option value="PROCESADO_TOTAL">PROCESADO_TOTAL</option>
-              <option value="PROCESADO_PARCIAL">PROCESADO_PARCIAL</option>
+              <option value="CERRADO">Cerrado</option>
+              <option value="PROCESADO_TOTAL">Procesado total</option>
+              <option value="PROCESADO_PARCIAL">Procesado parcial</option>
               <option value="ALL">Todos los consolidables</option>
             </select>
           </label>

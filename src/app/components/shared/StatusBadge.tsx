@@ -2,61 +2,138 @@ import { BatchStatus, LineStatus, NotificationStatus, SettlementStatus } from '.
 import { Loader2 } from 'lucide-react';
 
 interface StatusBadgeProps {
-  status: BatchStatus | LineStatus | NotificationStatus | SettlementStatus;
+  status: BatchStatus | LineStatus | NotificationStatus | SettlementStatus | string;
   size?: 'sm' | 'md' | 'lg';
   showIcon?: boolean;
+}
+
+export function getStatusLabel(status: string): string {
+  const map: Record<string, string> = {
+    // Estados de lote (backend en inglés -> español)
+    RECEIVED: 'Recibido',
+    VALIDATING: 'Validando',
+    VALIDATED: 'Validado',
+    QUEUED: 'En cola',
+    QUEUEING: 'Encolando',
+    ENCOLADO: 'Encolado',
+    PROCESSING: 'Procesando',
+    PROCESSING_ON_US: 'Procesando On-Us',
+    PROCESSING_OFF_US: 'Procesando Off-Us',
+    PROCESSED_PARTIAL: 'Procesado parcial',
+    PROCESSED_TOTAL: 'Procesado total',
+    SETTLED: 'Liquidado',
+    SETTLED_ON_US: 'Liquidado On-Us',
+    SETTLED_OFF_US: 'Liquidado Off-Us',
+    CLOSED: 'Cerrado',
+    REJECTED: 'Rechazado',
+    FAILED: 'Fallido',
+    CANCELLED: 'Cancelado',
+    DUPLICATE: 'Duplicado',
+    // Estados de lote (frontend español)
+    RECIBIDO: 'Recibido',
+    VALIDANDO: 'Validando',
+    VALIDADO: 'Validado',
+    PROCESANDO: 'Procesando',
+    PROCESADO_PARCIAL: 'Procesado parcial',
+    PROCESADO_TOTAL: 'Procesado total',
+    CERRADO: 'Cerrado',
+    RECHAZADO: 'Rechazado',
+    RECHAZADA: 'Rechazada',
+    FALLIDO: 'Fallido',
+    FALLIDA: 'Fallida',
+    ANULADO: 'Anulado',
+    // Estados de línea (backend inglés)
+    PENDING: 'Pendiente',
+    ACCEPTED: 'Aceptado',
+    APPROVED: 'Aprobado',
+    ACREDITADA_ON_US: 'Acreditada On-Us',
+    COMPENSADA_OFF_US: 'Compensada Off-Us',
+    REJECTED_LINE: 'Rechazada',
+    FAILED_LINE: 'Fallida',
+    // Estados de línea (frontend español)
+    PENDIENTE: 'Pendiente',
+    EXITOSA: 'Exitosa',
+    ENVIADA: 'Enviada',
+    ERROR: 'Error',
+    CANCELADA: 'Cancelada',
+  };
+  return map[status] || status;
 }
 
 export function StatusBadge({ status, size = 'md', showIcon = false }: StatusBadgeProps) {
   const getStatusConfig = () => {
     switch (status) {
       case 'RECIBIDO':
-        return { color: 'bg-gray-100 text-gray-800 border-gray-300', label: 'RECIBIDO' };
+      case 'RECEIVED':
+        return { color: 'bg-gray-100 text-gray-800 border-gray-300', label: getStatusLabel(status) };
       case 'VALIDANDO':
-        return { color: 'bg-blue-100 text-blue-800 border-blue-300', label: 'VALIDANDO' };
+      case 'VALIDATING':
+        return { color: 'bg-blue-100 text-blue-800 border-blue-300', label: getStatusLabel(status) };
       case 'VALIDADO':
-        return { color: 'bg-blue-500 text-white border-blue-600', label: 'VALIDADO' };
+      case 'VALIDATED':
+        return { color: 'bg-blue-500 text-white border-blue-600', label: getStatusLabel(status) };
       case 'RECHAZADO':
       case 'RECHAZADA':
-        return { color: 'bg-red-500 text-white border-red-600', label: status };
+      case 'REJECTED':
+        return { color: 'bg-red-500 text-white border-red-600', label: getStatusLabel(status) };
       case 'ENCOLADO':
-        return { color: 'bg-orange-100 text-orange-800 border-orange-300', label: 'ENCOLADO' };
+      case 'QUEUED':
+      case 'QUEUEING':
+        return { color: 'bg-orange-100 text-orange-800 border-orange-300', label: getStatusLabel(status) };
       case 'PROCESANDO':
+      case 'PROCESSING':
+      case 'PROCESSING_ON_US':
+      case 'PROCESSING_OFF_US':
         return {
           color: 'bg-blue-900 text-white border-blue-950',
-          label: 'PROCESANDO',
+          label: getStatusLabel(status),
           spinner: true,
         };
       case 'PROCESADO_PARCIAL':
+      case 'PROCESSED_PARTIAL':
         return {
           color: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-          label: 'PROCESADO PARCIAL',
+          label: getStatusLabel(status),
         };
       case 'PROCESADO_TOTAL':
-        return { color: 'bg-green-500 text-white border-green-600', label: 'PROCESADO TOTAL' };
+      case 'PROCESSED_TOTAL':
+        return { color: 'bg-green-500 text-white border-green-600', label: getStatusLabel(status) };
       case 'CERRADO':
-        return { color: 'bg-green-700 text-white border-green-800', label: 'CERRADO' };
+      case 'CLOSED':
+      case 'SETTLED':
+      case 'SETTLED_ON_US':
+      case 'SETTLED_OFF_US':
+        return { color: 'bg-green-700 text-white border-green-800', label: getStatusLabel(status) };
       case 'FALLIDO':
-        return { color: 'bg-red-700 text-white border-red-800', label: 'FALLIDO' };
+      case 'FALLIDA':
+      case 'FAILED':
+        return { color: 'bg-red-700 text-white border-red-800', label: getStatusLabel(status) };
       case 'ANULADO':
+      case 'CANCELLED':
         return {
           color: 'bg-gray-400 text-gray-800 border-gray-500 line-through',
-          label: 'ANULADO',
+          label: getStatusLabel(status),
         };
       case 'PENDIENTE':
-        return { color: 'bg-yellow-100 text-yellow-800 border-yellow-300', label: 'PENDIENTE' };
+      case 'PENDING':
+        return { color: 'bg-yellow-100 text-yellow-800 border-yellow-300', label: getStatusLabel(status) };
       case 'EXITOSA':
-        return { color: 'bg-green-500 text-white border-green-600', label: 'EXITOSA' };
-      case 'FALLIDA':
-        return { color: 'bg-red-500 text-white border-red-600', label: 'FALLIDA' };
+      case 'ACCEPTED':
+      case 'APPROVED':
+      case 'ACREDITADA_ON_US':
+        return { color: 'bg-green-500 text-white border-green-600', label: getStatusLabel(status) };
       case 'ENVIADA':
-        return { color: 'bg-green-500 text-white border-green-600', label: 'ENVIADA' };
+        return { color: 'bg-green-500 text-white border-green-600', label: getStatusLabel(status) };
       case 'ERROR':
-        return { color: 'bg-red-500 text-white border-red-600', label: 'ERROR' };
+        return { color: 'bg-red-500 text-white border-red-600', label: getStatusLabel(status) };
       case 'CANCELADA':
-        return { color: 'bg-gray-400 text-gray-800 border-gray-500', label: 'CANCELADA' };
+        return { color: 'bg-gray-400 text-gray-800 border-gray-500', label: getStatusLabel(status) };
+      case 'COMPENSADA_OFF_US':
+        return { color: 'bg-blue-500 text-white border-blue-600', label: getStatusLabel(status) };
+      case 'DUPLICATE':
+        return { color: 'bg-purple-500 text-white border-purple-600', label: getStatusLabel(status) };
       default:
-        return { color: 'bg-gray-100 text-gray-800 border-gray-300', label: status };
+        return { color: 'bg-gray-100 text-gray-800 border-gray-300', label: getStatusLabel(status) };
     }
   };
 

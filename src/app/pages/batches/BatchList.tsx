@@ -275,27 +275,27 @@ export function BatchList() {
 
               <option value="ALL">Todos los estados</option>
 
-              <option value="RECIBIDO">RECIBIDO</option>
+              <option value="RECIBIDO">Recibido</option>
 
-              <option value="ENCOLADO">ENCOLADO</option>
+              <option value="ENCOLADO">En cola</option>
 
-              <option value="VALIDANDO">VALIDANDO</option>
+              <option value="VALIDANDO">Validando</option>
 
-              <option value="VALIDADO">VALIDADO</option>
+              <option value="VALIDADO">Validado</option>
 
-              <option value="PROCESANDO">PROCESANDO</option>
+              <option value="PROCESANDO">Procesando</option>
 
-              <option value="PROCESADO_TOTAL">PROCESADO TOTAL</option>
+              <option value="PROCESADO_TOTAL">Procesado total</option>
 
-              <option value="PROCESADO_PARCIAL">PROCESADO PARCIAL</option>
+              <option value="PROCESADO_PARCIAL">Procesado parcial</option>
 
-              <option value="CERRADO">CERRADO</option>
+              <option value="CERRADO">Cerrado</option>
 
-              <option value="RECHAZADO">RECHAZADO</option>
+              <option value="RECHAZADO">Rechazado</option>
 
-              <option value="FALLIDO">FALLIDO</option>
+              <option value="FALLIDO">Fallido</option>
 
-              <option value="ANULADO">ANULADO</option>
+              <option value="ANULADO">Anulado</option>
 
             </select>
 
