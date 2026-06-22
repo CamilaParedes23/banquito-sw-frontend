@@ -56,12 +56,12 @@ function calculateDashboardStats(batches: ConsultaLoteResponse[]): DashboardStat
   return batches.reduce(
     (acc, b) => {
       acc.totalLotes++;
-      acc.montoTotal += b.montoTotalDeclarado || 0;
-      if (['RECIBIDO', 'VALIDADO', 'ENCOLADO'].includes(b.estado)) acc.pendientes++;
-      if (['VALIDANDO', 'PROCESANDO'].includes(b.estado)) acc.enProceso++;
-      if (b.estado === 'ANULADO') acc.anulados++;
-      if (b.estado === 'CERRADO') acc.cerrados++;
-      if (b.estado === 'RECHAZADO' || b.estado === 'FALLIDO') acc.rechazados++;
+      acc.montoTotal += b.controlAmount || 0;
+      if (['RECIBIDO', 'VALIDADO', 'ENCOLADO'].includes(b.status)) acc.pendientes++;
+      if (['VALIDANDO', 'PROCESANDO'].includes(b.status)) acc.enProceso++;
+      if (b.status === 'ANULADO') acc.anulados++;
+      if (b.status === 'CERRADO') acc.cerrados++;
+      if (b.status === 'RECHAZADO' || b.status === 'FALLIDO') acc.rechazados++;
       return acc;
     },
     { totalLotes: 0, montoTotal: 0, pendientes: 0, enProceso: 0, anulados: 0, cerrados: 0, rechazados: 0 }
@@ -82,7 +82,7 @@ export function Dashboard() {
 
     const params: Record<string, string> = { page: '0', size: String(MAX_PAGE_SIZE) };
 
-    if (user?.role === 'EMPRESA' && user.companyRuc) params.rucEmpresa = user.companyRuc;
+    if (user?.role === 'EMPRESA' && user.companyRuc) params.companyRuc = user.companyRuc;
 
     execute(() => BatchService.getBatches(params));
 
@@ -90,9 +90,9 @@ export function Dashboard() {
 
 
 
-  const batches = (response?.contenido || []).slice(0, 5);
+  const batches = (response?.content || []).slice(0, 5);
 
-  const stats = calculateDashboardStats(response?.contenido || []);
+  const stats = calculateDashboardStats(response?.content || []);
 
 
 
@@ -233,7 +233,7 @@ export function Dashboard() {
 
               <h3 className="text-4xl font-bold tracking-tight">{stats.cerrados}</h3>
 
-              <p className="text-xs opacity-75 mt-2">Completados exitosamente</p>
+              <p className="text-xs opacity-75 mt-2">Cerrados exitosamente</p>
 
             </div>
 
@@ -367,19 +367,19 @@ export function Dashboard() {
 
               {batches.map((batch) => (
 
-                <tr key={batch.uuidLote} className="hover:bg-gray-50/50 transition-colors">
+                <tr key={batch.batchId} className="hover:bg-gray-50/50 transition-colors">
 
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{batch.rucEmpresa}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{batch.companyRuc}</td>
 
                   <td className="px-6 py-4 text-sm font-bold text-right text-gray-900">
 
-                    ${batch.montoTotalDeclarado.toLocaleString('es-EC', { minimumFractionDigits: 2 })}
+                    ${batch.controlAmount.toLocaleString('es-EC', { minimumFractionDigits: 2 })}
 
                   </td>
 
                   <td className="px-6 py-4 text-center">
 
-                    {batch.estado && <StatusBadge status={batch.estado} size="sm" />}
+                    {batch.status && <StatusBadge status={batch.status} size="sm" />}
 
                   </td>
 
@@ -387,7 +387,7 @@ export function Dashboard() {
 
                     <Link
 
-                      to={`/batches/${batch.uuidLote}`}
+                      to={`/batches/${batch.batchId}`}
 
                       state={{ batch }}
 

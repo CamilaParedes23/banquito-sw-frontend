@@ -74,6 +74,18 @@ const menuItems: MenuItem[] = [
 
   {
 
+    path: '/clearing',
+
+    label: 'Compensación Off-Us',
+
+    icon: <FileSpreadsheet className="w-5 h-5" />,
+
+    roles: ['EMPRESA', 'OPERADOR', 'AUDITOR', 'ADMIN'],
+
+  },
+
+  {
+
     path: '/batches/all',
 
     label: 'Todos los Lotes',
@@ -233,4 +245,3 @@ export function Sidebar() {
   );
 
 }
-

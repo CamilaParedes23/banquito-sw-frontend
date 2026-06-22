@@ -52,6 +52,14 @@ export function BatchUpload() {
 
     const initData = async () => {
 
+      const fallbackTypes: ServiceTypeConfig[] = [
+
+        { codigo: 'NOM', nombre: 'Pago de Nómina', descripcion: 'Sueldos y beneficios', estado: 'ACTIVO' },
+
+        { codigo: 'PRV', nombre: 'Pago a Proveedores', descripcion: 'Obligaciones comerciales', estado: 'ACTIVO' }
+
+      ];
+
       try {
 
         const cutoffData = await ConfigService.getCutoffTimes();
@@ -64,8 +72,6 @@ export function BatchUpload() {
 
         cutoff.setHours(hours, minutes, 0);
 
-        
-
         setCutoffInfo({
 
           horaCorte: cutoffData.horaCorteProceso,
@@ -76,45 +82,45 @@ export function BatchUpload() {
 
         });
 
+      } catch {
+
+        setCutoffInfo({
+
+          horaCorte: '--:--',
+
+          horaInicio: '--:--',
+
+          isPastCutoff: false
+
+        });
+
+      }
 
 
-        try {
 
-          const types = await CatalogService.getServiceTypes();
+      try {
 
-          if (types && types.length > 0) {
+        const types = await CatalogService.getServiceTypes();
 
-            setServiceTypes(types);
+        if (types && types.length > 0) {
 
-            setSelectedService(types[0].codigo);
+          setServiceTypes(types);
 
-          } else {
+          setSelectedService(types[0].codigo);
 
-            throw new Error('Catalogo vacio');
-
-          }
-
-        } catch {
-
-          const fallbackTypes: ServiceTypeConfig[] = [
-
-            { codigo: 'NOM', nombre: 'Pago de Nómina', descripcion: 'Sueldos y beneficios', estado: 'ACTIVO' },
-
-            { codigo: 'PRV', nombre: 'Pago a Proveedores', descripcion: 'Obligaciones comerciales', estado: 'ACTIVO' }
-
-          ];
-
-          setServiceTypes(fallbackTypes);
-
-          setSelectedService('NOM');
+          return;
 
         }
-
-
 
       } catch {
 
       }
+
+
+
+      setServiceTypes(fallbackTypes);
+
+      setSelectedService(fallbackTypes[0].codigo);
 
     };
 
@@ -144,29 +150,43 @@ export function BatchUpload() {
 
       const formData = new FormData();
 
-      formData.append('archivo', file);
+      formData.append('file', file);
 
-      formData.append('tipoServicio', selectedService);
+      if (user?.companyRuc) {
 
-      formData.append('cuentaMatrizCargo', accountNumber);
+        formData.append('companyRuc', user.companyRuc);
 
-      formData.append('canalIngreso', 'PORTAL_WEB');
+      }
 
-      formData.append('rucEmpresa', user?.companyRuc || '');
+      if (user?.customerUuid) {
 
+        formData.append('companyCustomerUuid', user.customerUuid);
 
+      }
 
-      const response = await BatchService.uploadBatch(formData);
+      formData.append('channel', 'PORTAL_WEB');
 
-      if (response.uuidLote) {
+      if (user?.username) {
 
-        sessionStorage.setItem(`account_${response.uuidLote}`, accountNumber);
+        formData.append('receivedBy', user.username);
 
       }
 
 
 
-      toast.success(`Lote ${response.uuidLote.substring(0,8)}... cargado correctamente.`);
+      const response = await BatchService.uploadBatch(formData);
+
+      const batchUuid: string | undefined = response?.uuidLote ?? response?.batchId ?? response?.id;
+
+      if (!batchUuid) {
+
+        throw new Error('El servicio no devolvió el identificador del lote cargado.');
+
+      }
+
+      sessionStorage.setItem(`account_${batchUuid}`, accountNumber);
+
+      toast.success(`Lote ${batchUuid.substring(0, 8)}... cargado correctamente.`);
 
       setTimeout(() => navigate('/batches'), 1500);
 

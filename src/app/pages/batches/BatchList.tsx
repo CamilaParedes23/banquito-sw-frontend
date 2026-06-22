@@ -52,7 +52,7 @@ export function BatchList() {
 
 
 
-    if (rucFilter) params.rucEmpresa = rucFilter;
+    if (rucFilter) params.companyRuc = rucFilter;
 
     if (serviceTypeFilter !== 'ALL') params.tipoServicio = serviceTypeFilter;
 
@@ -119,19 +119,19 @@ export function BatchList() {
 
 
   // Ordenar lotes SIEMPRE por fecha de recepción (más recientes primero)
-  const batches = (response?.contenido || []).sort((a, b) => {
-    const dateA = new Date(a.fechaRecepcion).getTime();
-    const dateB = new Date(b.fechaRecepcion).getTime();
+  const batches = (response?.content || []).sort((a, b) => {
+    const dateA = new Date(a.receivedAt).getTime();
+    const dateB = new Date(b.receivedAt).getTime();
     return dateB - dateA; // Descendente: más recientes primero
   });
 
   const pagination = {
 
-    pagina: response?.pagina || 0,
+    pagina: response?.currentPage || 0,
 
-    totalPaginas: response?.totalPaginas || 1,
+    totalPaginas: response?.totalPages || 1,
 
-    totalElementos: response?.totalElementos || 0,
+    totalElementos: response?.totalElements || 0,
 
   };
 
@@ -420,11 +420,11 @@ export function BatchList() {
 
                 batches.map((batch) => (
 
-                  <tr key={batch.uuidLote} className="hover:bg-gray-50 transition-colors group">
+                  <tr key={batch.batchId} className="hover:bg-gray-50 transition-colors group">
 
                     <td className="px-6 py-4 text-sm font-semibold text-[#0D1B4B]">
 
-                      {batch.nombreArchivo}
+                      {batch.fileName}
 
                     </td>
 
@@ -432,7 +432,7 @@ export function BatchList() {
 
                       <td className="px-6 py-4 text-xs text-gray-500">
 
-                        {batch.rucEmpresa}
+                        {batch.companyRuc}
 
                       </td>
 
@@ -440,31 +440,31 @@ export function BatchList() {
 
                     <td className="px-6 py-4 text-xs text-gray-500">
 
-                      <span className="uppercase">{batch.canalIngreso}</span>
+                      <span className="uppercase">PORTAL_WEB</span>
 
                     </td>
 
                     <td className="px-6 py-4 text-sm font-mono font-bold text-right text-gray-900">
 
-                      ${batch.montoTotalDeclarado.toLocaleString('es-EC', { minimumFractionDigits: 2 })}
+                      ${batch.controlAmount.toLocaleString('es-EC', { minimumFractionDigits: 2 })}
 
                     </td>
 
                     <td className="px-6 py-4 text-sm text-center text-gray-600">
 
-                      {batch.totalRegistrosDeclarado}
+                      {batch.totalRecords}
 
                     </td>
 
                     <td className="px-6 py-4 text-center">
 
-                      {batch.estado && <StatusBadge status={batch.estado} />}
+                      {batch.status && <StatusBadge status={batch.status} />}
 
                     </td>
 
                     <td className="px-6 py-4 text-[11px] text-gray-500">
 
-                      {new Date(batch.fechaRecepcion).toLocaleString('es-EC', { dateStyle: 'short', timeStyle: 'short' })}
+                      {new Date(batch.receivedAt).toLocaleString('es-EC', { dateStyle: 'short', timeStyle: 'short' })}
 
                     </td>
 
@@ -472,7 +472,7 @@ export function BatchList() {
 
                       <Link
 
-                        to={`/batches/${batch.uuidLote}`}
+                        to={`/batches/${batch.batchId}`}
 
                         state={{ batch }}
 

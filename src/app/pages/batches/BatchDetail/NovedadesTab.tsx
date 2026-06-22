@@ -1,5 +1,6 @@
-import { CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertTriangle, Download, FileSpreadsheet } from 'lucide-react';
 import { LineStatus } from '../../../types';
+import { generateNovedadesPdf, reporteNovedadesToCsv, downloadTextFile } from '../../../utils/batchReportExport';
 
 interface NovedadesLine {
   secuencial: number;
@@ -23,9 +24,10 @@ interface NovedadesData {
 interface NovedadesTabProps {
   isLoading: boolean;
   data: NovedadesData | null;
+  batchId?: string;
 }
 
-export function NovedadesTab({ isLoading, data }: NovedadesTabProps) {
+export function NovedadesTab({ isLoading, data, batchId }: NovedadesTabProps) {
   if (isLoading) {
     return <div className="text-center py-12 text-gray-400">Cargando reporte de novedades...</div>;
   }
@@ -54,6 +56,29 @@ export function NovedadesTab({ isLoading, data }: NovedadesTabProps) {
           <p className="text-xl font-black text-orange-700 mt-1">{data.resumen?.fallidas ?? '-'}</p>
         </div>
       </div>
+
+      {/* Botones de descarga */}
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => generateNovedadesPdf(data as any)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#0D1B4B] text-white rounded-xl text-sm font-bold hover:bg-[#1a2d5f] transition-all shadow-md"
+        >
+          <Download className="w-4 h-4" />
+          Descargar PDF
+        </button>
+        <button
+          onClick={() => downloadTextFile(
+            `Novedades_${batchId || 'lote'}.csv`,
+            reporteNovedadesToCsv(data as any),
+            'text/csv'
+          )}
+          className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-[#0D1B4B] text-[#0D1B4B] rounded-xl text-sm font-bold hover:bg-[#0D1B4B]/5 transition-all shadow-sm"
+        >
+          <FileSpreadsheet className="w-4 h-4" />
+          Descargar CSV
+        </button>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>

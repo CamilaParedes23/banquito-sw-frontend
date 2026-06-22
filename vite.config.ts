@@ -18,8 +18,10 @@ function figmaAssetResolver() {
 
 // Read configuration from environment variables
 const basePath = process.env.VITE_BASE_PATH || '/switch/'
-const allowedHostsEnv = process.env.VITE_ALLOWED_HOSTS || 'banbanquito.3utilities.com'
+const allowedHostsEnv = process.env.VITE_ALLOWED_HOSTS || 'localhost,127.0.0.1'
 const allowedHosts = allowedHostsEnv.split(',').map(host => host.trim())
+const devServerPort = Number(process.env.VITE_DEV_SERVER_PORT || process.env.FRONTEND_SWITCH_PORT || 5173)
+const devServerHost = process.env.VITE_DEV_SERVER_HOST || '0.0.0.0'
 
 export default defineConfig({
   base: basePath,
@@ -37,8 +39,8 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5174,
-    host: 'localhost',
+    port: devServerPort,
+    host: devServerHost,
     allowedHosts: allowedHosts
   },
 

@@ -23,12 +23,13 @@ interface CommissionResult {
 }
 
 interface NovedadesLine {
-  secuencial: number;
-  nombreBeneficiario: string;
-  cuentaDestino: string;
-  monto: number;
-  estado: LineStatus;
-  mensajeError?: string;
+  sequenceNumber: number;
+  beneficiaryName: string;
+  destinationAccountNumber: string;
+  amount: number;
+  finalStatus: string;
+  errorMessage?: string;
+  processedAt?: string;
 }
 
 interface NovedadesData {
@@ -76,8 +77,7 @@ export function useBatchDetail(uuid: string | undefined) {
   const [batch, setBatch] = useState<Partial<EstadoLoteResponse & ConsultaLoteResponse>>(
     initialBatch || {}
   );
-  const [lines, setLines] = useState<LineaPagoResponse[]>([]);
-  const [fees, setFees] = useState<TarifaServicioResponse | null>(null);
+  const [fees, setFees] = useState<any>(null);
   const [liquidationResult, setLiquidationResult] = useState<LiquidarLoteResponse | null>(null);
   const [validationErrors, setValidationErrors] = useState<Array<{ codigo: string; mensaje: string }>>([]);
   const [novedades, setNovedades] = useState<NovedadesData | null>(null);
@@ -86,7 +86,6 @@ export function useBatchDetail(uuid: string | undefined) {
 
   const statusFetch = useFetchData<EstadoLoteResponse>();
   const listFetch = useFetchData<PaginaResponse<ConsultaLoteResponse>>();
-  const linesFetch = useFetchData<PaginaResponse<LineaPagoResponse>>();
 
   const fetchData = useCallback(async () => {
     if (!uuid) return;
@@ -100,58 +99,46 @@ export function useBatchDetail(uuid: string | undefined) {
       ]);
 
       const listItem =
-        listResponse.contenido?.find(
+        listResponse.content?.find(
           (b: ConsultaLoteResponse) =>
-            String(b.uuidLote).toLowerCase() === String(uuid).toLowerCase()
+            String(b.batchId).toLowerCase() === String(uuid).toLowerCase()
         ) ?? null;
 
       setBatch((prev) => ({
         ...prev,
         ...listItem,
-        uuidLote: status.uuidLote,
-        estado: status.estado,
-        motivoRechazoGlobal:
-          status.motivoRechazoGlobal ?? prev.motivoRechazoGlobal,
-        resumenLineas: status.resumenLineas,
-        fechas: status.fechas,
-        accionesDisponibles: status.accionesDisponibles,
+        ...status,
+        batchId: status.batchId || uuid,
       }));
 
       const feesData = await ConfigService.getPricingRules().catch(() => null);
       if (feesData) setFees(Array.isArray(feesData) ? feesData[0] : feesData);
 
-      const linesData = await BatchService.getBatchLines(uuid, { size: '100' });
-      setLines(linesData.contenido || []);
+      // Fetch novelty details for payment lines with final status
+      const novedadesData = await BatchService.getBatchNovedadesDetails(uuid).catch(() => null);
+      if (novedadesData && novedadesData.novelties) {
+        setNovedades({
+          lineas: novedadesData.novelties.map((n: any) => ({
+            sequenceNumber: n.sequenceNumber,
+            beneficiaryName: n.beneficiaryName,
+            destinationAccountNumber: n.destinationAccountNumber,
+            amount: n.amount,
+            finalStatus: n.finalStatus,
+            errorMessage: n.errorMessage,
+            processedAt: n.processedAt,
+          })),
+        });
+      }
     } catch {
     }
   }, [uuid]);
-
-  const fetchReports = useCallback(async () => {
-    if (!uuid || batch.estado !== 'CERRADO') return;
-    setIsLoadingReports(true);
-    try {
-      const [nov, comp] = await Promise.all([
-        BatchService.getBatchNovedades(uuid),
-        BatchService.getBatchComprobante(uuid),
-      ]);
-      setNovedades(nov);
-      setComprobante(comp);
-    } catch {
-    } finally {
-      setIsLoadingReports(false);
-    }
-  }, [uuid, batch.estado]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  const isTransitional = ['VALIDANDO', 'ENCOLADO', 'PROCESANDO'].includes(batch.estado || '');
+  const isTransitional = ['VALIDANDO', 'ENCOLADO', 'PROCESANDO'].includes(batch.status || '');
   usePolling(fetchData, isTransitional);
-
-  useEffect(() => {
-    if (batch.estado === 'CERRADO') fetchReports();
-  }, [fetchReports]);
 
   const calculateCommission = useCallback(
     (successfulCount: number): CommissionResult => {
@@ -162,7 +149,7 @@ export function useBatchDetail(uuid: string | undefined) {
       let rate = 0;
       if (fees?.rangos) {
         const matched = fees.rangos.find(
-          (r) =>
+          (r: any) =>
             successfulCount >= r.rangoDesde &&
             (r.rangoHasta === null || successfulCount <= r.rangoHasta)
         );
@@ -181,9 +168,8 @@ export function useBatchDetail(uuid: string | undefined) {
     [fees]
   );
 
-  const successfulLines = lines.filter((l) => l.estado === 'EXITOSA').length;
   const projectedSettlement = calculateCommission(
-    (batch as ConsultaLoteResponse).totalRegistrosValidados || successfulLines
+    novedades?.lineas?.filter((l: any) => l.finalStatus === 'ACREDITADA_ON_US').length || 0
   );
 
   const settlement = liquidationResult
@@ -197,17 +183,16 @@ export function useBatchDetail(uuid: string | undefined) {
 
   return {
     batch,
-    lines,
+    novedades,
     fees,
     liquidationResult,
     setLiquidationResult,
     validationErrors,
     setValidationErrors,
-    novedades,
     comprobante,
     isLoadingReports,
     settlement,
-    successfulLines,
+    successfulLines: novedades?.lineas?.filter((l: any) => l.finalStatus === 'ACREDITADA_ON_US').length || 0,
     fetchData,
     calculateCommission,
   };

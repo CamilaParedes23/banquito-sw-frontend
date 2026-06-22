@@ -139,7 +139,7 @@ background: linear-gradient(to bottom right, #C9A84C, #d4b962);
 
 ### 1. Instalar dependencias (si es necesario):
 ```bash
-cd banquito-sw-frontend
+cd banquito-frontend-switch
 npm install
 ```
 

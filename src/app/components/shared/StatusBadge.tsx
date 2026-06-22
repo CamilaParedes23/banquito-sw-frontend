@@ -55,8 +55,6 @@ export function StatusBadge({ status, size = 'md', showIcon = false }: StatusBad
         return { color: 'bg-red-500 text-white border-red-600', label: 'ERROR' };
       case 'CANCELADA':
         return { color: 'bg-gray-400 text-gray-800 border-gray-500', label: 'CANCELADA' };
-      case 'COMPLETADO':
-        return { color: 'bg-green-500 text-white border-green-600', label: 'COMPLETADO' };
       default:
         return { color: 'bg-gray-100 text-gray-800 border-gray-300', label: status };
     }

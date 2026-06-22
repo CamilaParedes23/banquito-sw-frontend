@@ -18,9 +18,9 @@ export function Login() {
 
     try {
       await login(username, password);
-      navigate('/');
+      navigate('/batches');
     } catch (err) {
-      setError('Usuario o contraseña incorrectos');
+      setError(err instanceof Error ? err.message : 'Usuario o contraseña incorrectos');
     } finally {
       setIsLoading(false);
     }
