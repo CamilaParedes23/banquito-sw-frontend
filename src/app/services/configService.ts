@@ -14,9 +14,32 @@ export const ConfigService = {
 
   getPricingRules: () =>
     Promise.resolve([
-      { rangoDesde: 1, rangoHasta: 100, tarifaUnitaria: 0.50, vigenciaDesde: '2024-01-01' },
-      { rangoDesde: 101, rangoHasta: 500, tarifaUnitaria: 0.40, vigenciaDesde: '2024-01-01' },
-      { rangoDesde: 501, rangoHasta: 999999, tarifaUnitaria: 0.30, vigenciaDesde: '2024-01-01' }
+      {
+        tipoServicio: 'NOM',
+        moneda: 'USD',
+        vigenteDesde: '2026-06-22',
+        rangos: [
+          { rangoDesde: 1, rangoHasta: 10, tarifaUnitaria: 0.50 },
+          { rangoDesde: 11, rangoHasta: 100, tarifaUnitaria: 0.40 },
+          { rangoDesde: 101, rangoHasta: 500, tarifaUnitaria: 0.30 },
+          { rangoDesde: 501, rangoHasta: 1000, tarifaUnitaria: 0.20 },
+          { rangoDesde: 1001, rangoHasta: 10000, tarifaUnitaria: 0.10 },
+          { rangoDesde: 10001, rangoHasta: null, tarifaUnitaria: 0.05 },
+        ],
+      },
+      {
+        tipoServicio: 'PRV',
+        moneda: 'USD',
+        vigenteDesde: '2026-06-22',
+        rangos: [
+          { rangoDesde: 1, rangoHasta: 10, tarifaUnitaria: 0.50 },
+          { rangoDesde: 11, rangoHasta: 100, tarifaUnitaria: 0.40 },
+          { rangoDesde: 101, rangoHasta: 500, tarifaUnitaria: 0.30 },
+          { rangoDesde: 501, rangoHasta: 1000, tarifaUnitaria: 0.20 },
+          { rangoDesde: 1001, rangoHasta: 10000, tarifaUnitaria: 0.10 },
+          { rangoDesde: 10001, rangoHasta: null, tarifaUnitaria: 0.05 },
+        ],
+      },
     ]),
 
   getSystemHealth: () =>
