@@ -1,16 +1,19 @@
 import { apiClient } from './apiClient';
 
+const OPERATING_HOURS = {
+  horaCorteProceso: '22:00',
+  horaInicioLotesEncolados: '00:01',
+  ventanaDuplicidadDias: 30,
+  zonaHoraria: 'America/Guayaquil',
+  mensaje: 'Horario operativo configurado localmente en frontend.',
+};
+
 export const ConfigService = {
   getCutoffTimes: () =>
-    Promise.resolve([
-      { tipoPago: 'NOMINA', diaSemana: 'LUNES', horaCorte: '18:00', zonaHoraria: 'America/Guayaquil' },
-      { tipoPago: 'PROVEEDORES', diaSemana: 'LUNES', horaCorte: '17:00', zonaHoraria: 'America/Guayaquil' }
-    ]),
+    Promise.resolve(OPERATING_HOURS),
 
   getOperatingHours: () =>
-    Promise.resolve([
-      { tipoPago: 'NOMINA', diaSemana: 'LUNES', horaCorte: '18:00', zonaHoraria: 'America/Guayaquil' }
-    ]),
+    Promise.resolve(OPERATING_HOURS),
 
   getPricingRules: () =>
     Promise.resolve([
@@ -43,7 +46,7 @@ export const ConfigService = {
     ]),
 
   getSystemHealth: () =>
-    Promise.resolve({ status: 'OPERATIONAL', services: [] }),
+    Promise.resolve({ status: 'OPERATIONAL', services: [], ...OPERATING_HOURS }),
 
   getServiceTypes: () =>
     Promise.resolve([
