@@ -1,6 +1,7 @@
 import { Download, FileSpreadsheet } from 'lucide-react';
 import { StatusBadge } from '../../../components/shared/StatusBadge';
 import { generateNovedadesPdf, reporteNovedadesToCsv, downloadTextFile } from '../../../utils/batchReportExport';
+import { mapBatchRejectionMessage } from '../../../utils/batchErrorMessages';
 
 interface NovedadesLine {
   secuencial: number;
@@ -28,49 +29,8 @@ interface NovedadesTabProps {
 }
 
 function extractReadableMessage(errorMessage?: string): string {
-  if (!errorMessage) return '—';
-
-  // Extract "message" field from JSON in string
-  const messageMatch = errorMessage.match(/"message"\s*:\s*"([^"]+)"/);
-  if (messageMatch) {
-    return messageMatch[1];
-  }
-
-  // Extract "code" field from JSON in string
-  const codeMatch = errorMessage.match(/"code"\s*:\s*"([^"]+)"/);
-  if (codeMatch) {
-    return codeMatch[1];
-  }
-
-  // Try to parse body={...} format
-  const bodyMatch = errorMessage.match(/body=(\{[^}]*\})/);
-  if (bodyMatch) {
-    try {
-      const parsed = JSON.parse(bodyMatch[1]);
-      if (parsed.message) return parsed.message;
-      if (parsed.code) return parsed.code;
-    } catch {
-      // ignore parse errors
-    }
-  }
-
-  // Handle common error patterns
-  if (errorMessage.includes('ADMIN_INSTITUTION_NOT_FOUND')) {
-    return 'Institución financiera no encontrada';
-  }
-  if (errorMessage.includes('httpStatus=409')) {
-    return 'Conflicto en el procesamiento';
-  }
-  if (errorMessage.includes('httpStatus=404')) {
-    return 'Recurso no encontrado';
-  }
-
-  // Truncate long messages
-  if (errorMessage.length > 60) {
-    return errorMessage.substring(0, 60) + '...';
-  }
-
-  return errorMessage;
+  if (!errorMessage) return '---';
+  return mapBatchRejectionMessage(errorMessage);
 }
 
 export function NovedadesTab({ isLoading, data, batchId }: NovedadesTabProps) {
@@ -81,6 +41,14 @@ export function NovedadesTab({ isLoading, data, batchId }: NovedadesTabProps) {
   if (!data) {
     return <div className="text-center py-12 text-gray-400">Reporte de novedades no disponible.</div>;
   }
+
+  const sanitizedData = {
+    ...data,
+    lineas: (data.lineas || []).map((line) => ({
+      ...line,
+      mensajeError: extractReadableMessage(line.mensajeError),
+    })),
+  };
 
   return (
     <div className="space-y-6">
@@ -106,7 +74,7 @@ export function NovedadesTab({ isLoading, data, batchId }: NovedadesTabProps) {
       {/* Botones de descarga */}
       <div className="flex justify-end gap-3">
         <button
-          onClick={() => generateNovedadesPdf(data as any)}
+          onClick={() => generateNovedadesPdf(sanitizedData as any)}
           className="flex items-center gap-2 px-4 py-2.5 bg-[#0D1B4B] text-white rounded-xl text-sm font-bold hover:bg-[#1a2d5f] transition-all shadow-md"
         >
           <Download className="w-4 h-4" />
@@ -115,7 +83,7 @@ export function NovedadesTab({ isLoading, data, batchId }: NovedadesTabProps) {
         <button
           onClick={() => downloadTextFile(
             `Novedades_${batchId || 'lote'}.csv`,
-            reporteNovedadesToCsv(data as any),
+            reporteNovedadesToCsv(sanitizedData as any),
             'text/csv'
           )}
           className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-[#0D1B4B] text-[#0D1B4B] rounded-xl text-sm font-bold hover:bg-[#0D1B4B]/5 transition-all shadow-sm"
@@ -138,7 +106,7 @@ export function NovedadesTab({ isLoading, data, batchId }: NovedadesTabProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50 text-sm">
-            {(data.lineas || []).map((l: NovedadesLine) => (
+            {(sanitizedData.lineas || []).map((l: NovedadesLine) => (
               <tr key={l.secuencial} className="hover:bg-gray-50 transition-colors">
                 <td className="py-3 text-gray-400 font-mono">{l.secuencial}</td>
                 <td className="py-3 font-bold text-gray-900">{l.nombreBeneficiario}</td>
@@ -150,7 +118,7 @@ export function NovedadesTab({ isLoading, data, batchId }: NovedadesTabProps) {
                   <StatusBadge status={l.estado} size="sm" />
                 </td>
                 <td className="py-3 text-xs text-gray-500" title={l.mensajeError}>
-                  {extractReadableMessage(l.mensajeError)}
+                  {l.mensajeError || '---'}
                 </td>
               </tr>
             ))}

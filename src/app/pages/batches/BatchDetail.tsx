@@ -19,6 +19,13 @@ import { NovedadesTab } from './BatchDetail/NovedadesTab';
 import { SettlementTab } from './BatchDetail/SettlementTab';
 
 import { BatchService } from '../../services/batchService';
+import {
+  getDisplayErrorCode,
+  getFriendlyFieldName,
+  mapBatchRejectionMessage,
+  mapValidationErrorMessage,
+  UNKNOWN_ERROR_MESSAGE,
+} from '../../utils/batchErrorMessages';
 
 
 
@@ -135,6 +142,11 @@ export function BatchDetail() {
 
   if (!batch.batchId) return <div className="p-20 text-center italic text-gray-400">Consultando PostgreSQL...</div>;
 
+  const batchRejectionMessage = batch.message ? mapBatchRejectionMessage(batch.message) : null;
+  const shouldShowBatchRejectionMessage =
+    Boolean(batchRejectionMessage) &&
+    (batchRejectionMessage !== UNKNOWN_ERROR_MESSAGE || validationErrors.length === 0);
+
 
 
 
@@ -168,7 +180,7 @@ export function BatchDetail() {
           </div>
           <div className="min-w-0 flex-1">
             <h4 className="text-base font-bold text-red-800 mb-1">Lote Rechazado</h4>
-            {batch.message && <p className="text-sm text-red-700">{batch.message}</p>}
+            {shouldShowBatchRejectionMessage && <p className="text-sm text-red-700">{batchRejectionMessage}</p>}
             {validationErrors.length > 0 && (
               <div className="mt-4 space-y-2">
                 {validationErrors.map((error, index) => (
@@ -178,13 +190,13 @@ export function BatchDetail() {
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="rounded-md bg-red-100 px-2 py-1 text-xs font-bold text-red-800">
-                        {error.code}
+                        {getDisplayErrorCode(error.code, error.message)}
                       </span>
                       {error.field && (
-                        <span className="font-mono text-xs text-red-700">{error.field}</span>
+                        <span className="text-xs font-semibold text-red-700">{getFriendlyFieldName(error.field)}</span>
                       )}
                     </div>
-                    <p className="mt-2 text-sm text-red-700">{error.message}</p>
+                    <p className="mt-2 text-sm text-red-700">{mapValidationErrorMessage(error.code, error.message)}</p>
                   </div>
                 ))}
               </div>
