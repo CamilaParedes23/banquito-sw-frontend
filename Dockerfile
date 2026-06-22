@@ -1,7 +1,7 @@
 FROM node:20-alpine AS builder
 
 WORKDIR /app
-
+# Build arguments for environment variables
 ARG VITE_API_BASE_URL
 ARG VITE_APP_NAME
 ARG VITE_APP_SUBTITLE
