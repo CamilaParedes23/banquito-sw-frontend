@@ -1,4 +1,4 @@
-import { BatchStatus } from './index';
+import { BatchStatus, Channel } from './index';
 
 export interface FechasLoteResponse {
   fechaRecepcion?: string;
@@ -42,6 +42,7 @@ export interface ConsultaLoteResponse {
   status: BatchStatus;
   totalRecords: number;
   controlAmount: number;
+  channel?: Channel;
 }
 
 export interface PaginaResponse<T> {

@@ -19,6 +19,18 @@ import { ConsultaLoteResponse, PaginaResponse } from '../../types/responses';
 import { DEFAULT_PAGE_SIZE } from '../../constants';
 
 
+const CHANNEL_LABELS: Record<string, string> = {
+  PORTAL_WEB: 'Portal Web',
+  WEB: 'Portal Web',
+  SFTP: 'SFTP',
+};
+
+
+function formatChannel(channel?: string) {
+  return CHANNEL_LABELS[channel?.trim().toUpperCase() || ''] || 'Desconocido';
+}
+
+
 
 export function BatchList() {
 
@@ -440,7 +452,7 @@ export function BatchList() {
 
                     <td className="px-6 py-4 text-xs text-gray-500">
 
-                      <span className="uppercase">PORTAL_WEB</span>
+                      {formatChannel(batch.channel)}
 
                     </td>
 
