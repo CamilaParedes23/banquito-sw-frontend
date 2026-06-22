@@ -56,12 +56,12 @@ function calculateDashboardStats(batches: ConsultaLoteResponse[]): DashboardStat
   return batches.reduce(
     (acc, b) => {
       acc.totalLotes++;
-      acc.montoTotal += b.montoTotalDeclarado || 0;
-      if (['RECIBIDO', 'VALIDADO', 'ENCOLADO'].includes(b.estado)) acc.pendientes++;
-      if (['VALIDANDO', 'PROCESANDO'].includes(b.estado)) acc.enProceso++;
-      if (b.estado === 'ANULADO') acc.anulados++;
-      if (b.estado === 'CERRADO') acc.cerrados++;
-      if (b.estado === 'RECHAZADO' || b.estado === 'FALLIDO') acc.rechazados++;
+      acc.montoTotal += b.controlAmount || 0;
+      if (['RECIBIDO', 'VALIDADO', 'ENCOLADO'].includes(b.status)) acc.pendientes++;
+      if (['VALIDANDO', 'PROCESANDO'].includes(b.status)) acc.enProceso++;
+      if (b.status === 'ANULADO') acc.anulados++;
+      if (b.status === 'CERRADO') acc.cerrados++;
+      if (b.status === 'RECHAZADO' || b.status === 'FALLIDO') acc.rechazados++;
       return acc;
     },
     { totalLotes: 0, montoTotal: 0, pendientes: 0, enProceso: 0, anulados: 0, cerrados: 0, rechazados: 0 }
@@ -82,7 +82,7 @@ export function Dashboard() {
 
     const params: Record<string, string> = { page: '0', size: String(MAX_PAGE_SIZE) };
 
-    if (user?.role === 'EMPRESA' && user.companyRuc) params.rucEmpresa = user.companyRuc;
+    if (user?.role === 'EMPRESA' && user.companyRuc) params.companyRuc = user.companyRuc;
 
     execute(() => BatchService.getBatches(params));
 
@@ -90,9 +90,9 @@ export function Dashboard() {
 
 
 
-  const batches = (response?.contenido || []).slice(0, 5);
+  const batches = (response?.content || []).slice(0, 5);
 
-  const stats = calculateDashboardStats(response?.contenido || []);
+  const stats = calculateDashboardStats(response?.content || []);
 
 
 
@@ -116,65 +116,74 @@ export function Dashboard() {
 
   return (
 
-    <div className="space-y-6">
+    <div className="space-y-8">
 
-      <div className="flex items-center justify-between">
+      {/* Header con gradiente */}
+      <div className="bg-gradient-to-r from-[#0D1B4B] to-[#1a2d5f] rounded-2xl p-8 text-white shadow-xl">
 
-        <div>
+        <div className="flex items-center justify-between">
 
-          <h1 className="text-3xl font-bold text-[#0D1B4B]">Dashboard</h1>
+          <div>
 
-          <p className="text-gray-600 mt-1">
+            <h1 className="text-4xl font-bold mb-2">Bienvenido de nuevo</h1>
 
-            {user?.role === 'EMPRESA'
+            <p className="text-blue-200 text-lg">
 
-              ? `Resumen para ${user.companyName}`
+              {user?.role === 'EMPRESA'
 
-              : 'Control Central del Switch de Pagos'}
+                ? `${user.companyName}`
 
-          </p>
+                : 'Panel de Control - Switch de Pagos Masivos'}
+
+            </p>
+
+          </div>
+
+          {user?.role === 'EMPRESA' && (
+
+            <Link
+
+              to="/batches/upload"
+
+              className="bg-gradient-to-r from-[#10b981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white px-8 py-4 rounded-xl flex items-center gap-3 shadow-2xl transition-all font-semibold text-lg"
+
+            >
+
+              <Upload className="w-6 h-6" />
+
+              Cargar Nuevo Lote
+
+            </Link>
+
+          )}
 
         </div>
-
-        {user?.role === 'EMPRESA' && (
-
-          <Link
-
-            to="/batches/upload"
-
-            className="bg-[#0D1B4B] hover:bg-[#1e3a8a] text-white px-6 py-3 rounded-lg flex items-center gap-2 shadow-lg transition-all font-medium"
-
-          >
-
-            <Upload className="w-5 h-5" />
-
-            Cargar Lote
-
-          </Link>
-
-        )}
 
       </div>
 
 
 
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      {/* Tarjetas de estadísticas modernas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
+        {/* Card 1: Lotes Totales */}
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between mb-4">
 
-            <div>
+            <div className="flex-1">
 
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Lotes Totales</p>
+              <p className="text-sm font-medium opacity-90 mb-1">Total de Lotes</p>
 
-              <p className="text-3xl font-bold text-[#0D1B4B] mt-2">{stats.totalLotes}</p>
+              <h3 className="text-4xl font-bold tracking-tight">{stats.totalLotes}</h3>
+
+              <p className="text-xs opacity-75 mt-2">Lotes procesados</p>
 
             </div>
 
-            <div className="bg-blue-50 p-3 rounded-full">
+            <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
 
-              <FileText className="w-6 h-6 text-blue-600" />
+              <FileText className="w-8 h-8" />
 
             </div>
 
@@ -184,49 +193,28 @@ export function Dashboard() {
 
 
 
-        <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+        {/* Card 2: Volumen Total */}
+        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
 
-          <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start justify-between mb-4">
 
-            <div className="min-w-0">
+            <div className="flex-1">
 
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Volumen Total</p>
+              <p className="text-sm font-medium opacity-90 mb-1">Volumen Total</p>
 
-              <p className="text-lg font-bold text-green-600 mt-1">
+              <h3 className="text-3xl font-bold tracking-tight">
 
                 ${stats.montoTotal.toLocaleString('es-EC', { minimumFractionDigits: 2 })}
 
-              </p>
+              </h3>
+
+              <p className="text-xs opacity-75 mt-2">Monto procesado</p>
 
             </div>
 
-            <div className="bg-green-50 p-2 rounded-full flex-shrink-0 mt-0.5">
+            <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
 
-              <DollarSign className="w-4 h-4 text-green-600" />
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Por Atender</p>
-
-              <p className="text-3xl font-bold text-orange-600 mt-2">{stats.pendientes}</p>
-
-            </div>
-
-            <div className="bg-orange-50 p-3 rounded-full">
-
-              <Clock className="w-6 h-6 text-orange-600" />
+              <DollarSign className="w-8 h-8" />
 
             </div>
 
@@ -234,47 +222,24 @@ export function Dashboard() {
 
         </div>
 
+        {/* Card 3: Exitosos */}
+        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
 
+          <div className="flex items-start justify-between mb-4">
 
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
+            <div className="flex-1">
 
-          <div className="flex items-center justify-between">
+              <p className="text-sm font-medium opacity-90 mb-1">Lotes Cerrados</p>
 
-            <div>
+              <h3 className="text-4xl font-bold tracking-tight">{stats.cerrados}</h3>
 
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Lotes Anulados</p>
-
-              <p className="text-3xl font-bold text-gray-400 mt-2">{stats.anulados}</p>
-
-            </div>
-
-            <div className="bg-gray-50 p-3 rounded-full">
-
-              <Ban className="w-6 h-6 text-gray-400" />
+              <p className="text-xs opacity-75 mt-2">Cerrados exitosamente</p>
 
             </div>
 
-          </div>
+            <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
 
-        </div>
-
-
-
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cerrados</p>
-
-              <p className="text-3xl font-bold text-green-700 mt-2">{stats.cerrados}</p>
-
-            </div>
-
-            <div className="bg-green-50 p-3 rounded-full">
-
-              <Lock className="w-6 h-6 text-green-600" />
+              <CheckCircle className="w-8 h-8" />
 
             </div>
 
@@ -282,31 +247,99 @@ export function Dashboard() {
 
         </div>
 
+        {/* Card 4: Pendientes */}
+        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
 
+          <div className="flex items-start justify-between mb-4">
 
-        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Rechazados</p>
-              <p className="text-3xl font-bold text-red-600 mt-2">{stats.rechazados}</p>
+            <div className="flex-1">
+
+              <p className="text-sm font-medium opacity-90 mb-1">Por Atender</p>
+
+              <h3 className="text-4xl font-bold tracking-tight">{stats.pendientes}</h3>
+
+              <p className="text-xs opacity-75 mt-2">Requieren atención</p>
+
             </div>
-            <div className="bg-red-50 p-3 rounded-full">
-              <AlertTriangle className="w-6 h-6 text-red-600" />
+
+            <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+
+              <Clock className="w-8 h-8" />
+
             </div>
+
           </div>
+
+        </div>
+
+        {/* Card 5: En Proceso */}
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+
+          <div className="flex items-start justify-between mb-4">
+
+            <div className="flex-1">
+
+              <p className="text-sm font-medium opacity-90 mb-1">En Proceso</p>
+
+              <h3 className="text-4xl font-bold tracking-tight">{stats.enProceso}</h3>
+
+              <p className="text-xs opacity-75 mt-2">Procesando ahora</p>
+
+            </div>
+
+            <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+
+              <TrendingUp className="w-8 h-8" />
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* Card 6: Rechazados */}
+        <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+
+          <div className="flex items-start justify-between mb-4">
+
+            <div className="flex-1">
+
+              <p className="text-sm font-medium opacity-90 mb-1">Rechazados</p>
+
+              <h3 className="text-4xl font-bold tracking-tight">{stats.rechazados}</h3>
+
+              <p className="text-xs opacity-75 mt-2">Con errores</p>
+
+            </div>
+
+            <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+
+              <AlertTriangle className="w-8 h-8" />
+
+            </div>
+
+          </div>
+
         </div>
 
       </div>
 
 
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Tabla de actividad reciente mejorada */}
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
 
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 border-b border-gray-200 flex justify-between items-center">
 
-          <h2 className="text-lg font-bold text-[#0D1B4B]">Actividad Reciente</h2>
+          <div>
+            <h2 className="text-2xl font-bold text-[#0D1B4B]">Actividad Reciente</h2>
+            <p className="text-sm text-gray-600 mt-1">Últimos lotes procesados</p>
+          </div>
 
-          <Link to="/batches" className="text-xs font-bold text-blue-600 hover:underline">Ver Historial Completo →</Link>
+          <Link to="/batches" className="text-sm font-semibold text-[#10b981] hover:text-[#059669] flex items-center gap-2 transition-colors">
+            Ver Historial Completo 
+            <TrendingUp className="w-4 h-4" />
+          </Link>
 
         </div>
 
@@ -334,19 +367,19 @@ export function Dashboard() {
 
               {batches.map((batch) => (
 
-                <tr key={batch.uuidLote} className="hover:bg-gray-50/50 transition-colors">
+                <tr key={batch.batchId} className="hover:bg-gray-50/50 transition-colors">
 
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{batch.rucEmpresa}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{batch.companyRuc}</td>
 
                   <td className="px-6 py-4 text-sm font-bold text-right text-gray-900">
 
-                    ${batch.montoTotalDeclarado.toLocaleString('es-EC', { minimumFractionDigits: 2 })}
+                    ${batch.controlAmount.toLocaleString('es-EC', { minimumFractionDigits: 2 })}
 
                   </td>
 
                   <td className="px-6 py-4 text-center">
 
-                    {batch.estado && <StatusBadge status={batch.estado} size="sm" />}
+                    {batch.status && <StatusBadge status={batch.status} size="sm" />}
 
                   </td>
 
@@ -354,15 +387,15 @@ export function Dashboard() {
 
                     <Link
 
-                      to={`/batches/${batch.uuidLote}`}
+                      to={`/batches/${batch.batchId}`}
 
                       state={{ batch }}
 
-                      className="inline-flex items-center justify-center px-4 py-2 text-[10px] font-black uppercase tracking-widest text-[#0D1B4B] bg-white border border-gray-200 rounded-md hover:bg-[#0D1B4B] hover:text-white transition-all shadow-sm"
+                      className="inline-flex items-center justify-center px-6 py-2.5 text-xs font-semibold bg-gradient-to-r from-[#10b981] to-[#059669] text-white rounded-lg hover:from-[#059669] hover:to-[#047857] transition-all shadow-md hover:shadow-lg"
 
                     >
 
-                      GESTIONAR
+                      Ver Detalles
 
                     </Link>
 

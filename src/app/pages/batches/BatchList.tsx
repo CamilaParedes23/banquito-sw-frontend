@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 import { Link } from 'react-router';
 
-import { RefreshCw, Calendar, Building2, FilterX, ClipboardList } from 'lucide-react';
+import { RefreshCw, Calendar, Building2, FilterX, ClipboardList, ArrowUpDown } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
 
@@ -52,7 +52,7 @@ export function BatchList() {
 
 
 
-    if (rucFilter) params.rucEmpresa = rucFilter;
+    if (rucFilter) params.companyRuc = rucFilter;
 
     if (serviceTypeFilter !== 'ALL') params.tipoServicio = serviceTypeFilter;
 
@@ -118,15 +118,20 @@ export function BatchList() {
 
 
 
-  const batches = response?.contenido || [];
+  // Ordenar lotes SIEMPRE por fecha de recepción (más recientes primero)
+  const batches = (response?.content || []).sort((a, b) => {
+    const dateA = new Date(a.receivedAt).getTime();
+    const dateB = new Date(b.receivedAt).getTime();
+    return dateB - dateA; // Descendente: más recientes primero
+  });
 
   const pagination = {
 
-    pagina: response?.pagina || 0,
+    pagina: response?.currentPage || 0,
 
-    totalPaginas: response?.totalPaginas || 1,
+    totalPaginas: response?.totalPages || 1,
 
-    totalElementos: response?.totalElementos || 0,
+    totalElementos: response?.totalElements || 0,
 
   };
 
@@ -134,51 +139,56 @@ export function BatchList() {
 
   return (
 
-    <div className="space-y-6">
+    <div className="space-y-8">
 
-      <div className="flex items-center justify-between">
+      {/* Header con gradiente */}
+      <div className="bg-gradient-to-r from-[#0D1B4B] to-[#1a2d5f] rounded-2xl p-8 text-white shadow-xl">
 
-        <div>
+        <div className="flex items-center justify-between">
 
-          <h1 className="text-3xl font-bold text-[#0D1B4B]">
+          <div>
 
-            {user?.role === 'EMPRESA' ? 'Lotes de Pagos' : 'Consulta de Lotes'}
+            <h1 className="text-4xl font-bold mb-2">
 
-          </h1>
+              {user?.role === 'EMPRESA' ? 'Mis Lotes de Pagos' : 'Consulta de Lotes'}
 
-          <p className="text-gray-600 mt-1">Consulta y gestión de lotes de pagos masivos</p>
+            </h1>
 
-        </div>
+            <p className="text-blue-200 text-lg">Consulta y gestión de lotes de pagos masivos</p>
 
-        <div className="flex gap-2">
+          </div>
 
-          <button 
+          <div className="flex gap-3">
 
-            onClick={clearFilters}
+            <button 
 
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
+              onClick={clearFilters}
 
-          >
+              className="flex items-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-white/20 border-2 border-white/30 rounded-xl hover:bg-white/30 transition-all backdrop-blur-sm"
 
-            <FilterX className="w-4 h-4" />
+            >
 
-            Reiniciar
+              <FilterX className="w-5 h-5" />
 
-          </button>
+              Limpiar Filtros
 
-          <button 
+            </button>
 
-            onClick={() => fetchBatches(pagination.pagina)}
+            <button 
 
-            disabled={isLoading}
+              onClick={() => fetchBatches(pagination.pagina)}
 
-            className="p-2 text-white bg-[#0D1B4B] rounded-lg hover:bg-[#1e3a8a] disabled:opacity-50 transition-all"
+              disabled={isLoading}
 
-          >
+              className="p-3 text-white bg-white/20 border-2 border-white/30 rounded-xl hover:bg-white/30 disabled:opacity-50 transition-all backdrop-blur-sm"
 
-            <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+            >
 
-          </button>
+              <RefreshCw className={`w-6 h-6 ${isLoading ? 'animate-spin' : ''}`} />
+
+            </button>
+
+          </div>
 
         </div>
 
@@ -186,9 +196,12 @@ export function BatchList() {
 
 
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* Panel de filtros mejorado */}
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <h3 className="text-lg font-bold text-[#0D1B4B] mb-6">Filtros de Búsqueda</h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
 
           <div>
 
@@ -262,27 +275,27 @@ export function BatchList() {
 
               <option value="ALL">Todos los estados</option>
 
-              <option value="RECIBIDO">RECIBIDO</option>
+              <option value="RECIBIDO">Recibido</option>
 
-              <option value="ENCOLADO">ENCOLADO</option>
+              <option value="ENCOLADO">En cola</option>
 
-              <option value="VALIDANDO">VALIDANDO</option>
+              <option value="VALIDANDO">Validando</option>
 
-              <option value="VALIDADO">VALIDADO</option>
+              <option value="VALIDADO">Validado</option>
 
-              <option value="PROCESANDO">PROCESANDO</option>
+              <option value="PROCESANDO">Procesando</option>
 
-              <option value="PROCESADO_TOTAL">PROCESADO TOTAL</option>
+              <option value="PROCESADO_TOTAL">Procesado total</option>
 
-              <option value="PROCESADO_PARCIAL">PROCESADO PARCIAL</option>
+              <option value="PROCESADO_PARCIAL">Procesado parcial</option>
 
-              <option value="CERRADO">CERRADO</option>
+              <option value="CERRADO">Cerrado</option>
 
-              <option value="RECHAZADO">RECHAZADO</option>
+              <option value="RECHAZADO">Rechazado</option>
 
-              <option value="FALLIDO">FALLIDO</option>
+              <option value="FALLIDO">Fallido</option>
 
-              <option value="ANULADO">ANULADO</option>
+              <option value="ANULADO">Anulado</option>
 
             </select>
 
@@ -346,13 +359,14 @@ export function BatchList() {
 
 
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      {/* Tabla mejorada */}
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
 
         <div className="overflow-x-auto">
 
           <table className="w-full text-left border-collapse">
 
-            <thead className="bg-[#F8FAFC] border-b border-gray-200">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
 
               <tr>
 
@@ -406,11 +420,11 @@ export function BatchList() {
 
                 batches.map((batch) => (
 
-                  <tr key={batch.uuidLote} className="hover:bg-gray-50 transition-colors group">
+                  <tr key={batch.batchId} className="hover:bg-gray-50 transition-colors group">
 
                     <td className="px-6 py-4 text-sm font-semibold text-[#0D1B4B]">
 
-                      {batch.nombreArchivo}
+                      {batch.fileName}
 
                     </td>
 
@@ -418,7 +432,7 @@ export function BatchList() {
 
                       <td className="px-6 py-4 text-xs text-gray-500">
 
-                        {batch.rucEmpresa}
+                        {batch.companyRuc}
 
                       </td>
 
@@ -426,31 +440,31 @@ export function BatchList() {
 
                     <td className="px-6 py-4 text-xs text-gray-500">
 
-                      <span className="uppercase">{batch.canalIngreso}</span>
+                      <span className="uppercase">PORTAL_WEB</span>
 
                     </td>
 
                     <td className="px-6 py-4 text-sm font-mono font-bold text-right text-gray-900">
 
-                      ${batch.montoTotalDeclarado.toLocaleString('es-EC', { minimumFractionDigits: 2 })}
+                      ${batch.controlAmount.toLocaleString('es-EC', { minimumFractionDigits: 2 })}
 
                     </td>
 
                     <td className="px-6 py-4 text-sm text-center text-gray-600">
 
-                      {batch.totalRegistrosDeclarado}
+                      {batch.totalRecords}
 
                     </td>
 
                     <td className="px-6 py-4 text-center">
 
-                      {batch.estado && <StatusBadge status={batch.estado} />}
+                      {batch.status && <StatusBadge status={batch.status} />}
 
                     </td>
 
                     <td className="px-6 py-4 text-[11px] text-gray-500">
 
-                      {new Date(batch.fechaRecepcion).toLocaleString('es-EC', { dateStyle: 'short', timeStyle: 'short' })}
+                      {new Date(batch.receivedAt).toLocaleString('es-EC', { dateStyle: 'short', timeStyle: 'short' })}
 
                     </td>
 
@@ -458,15 +472,17 @@ export function BatchList() {
 
                       <Link
 
-                        to={`/batches/${batch.uuidLote}`}
+                        to={`/batches/${batch.batchId}`}
 
                         state={{ batch }}
 
-                        className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-400 group-hover:bg-[#C9A84C] group-hover:text-white transition-all shadow-sm"
+                        className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-gradient-to-r from-[#10b981] to-[#059669] text-white hover:from-[#059669] hover:to-[#047857] transition-all shadow-md hover:shadow-lg text-xs font-semibold"
 
                       >
 
-                        <ClipboardList className="w-4 h-4" />
+                        <ClipboardList className="w-4 h-4 mr-1" />
+
+                        Ver
 
                       </Link>
 
@@ -486,15 +502,15 @@ export function BatchList() {
 
 
 
-        <div className="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+        <div className="p-6 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 flex items-center justify-between">
 
-          <p className="text-xs text-gray-400 font-medium">
+          <p className="text-sm text-gray-600 font-semibold">
 
-            PÁGINA {pagination.pagina + 1} DE {pagination.totalPaginas} | {pagination.totalElementos} REGISTROS TOTALES
+            Página {pagination.pagina + 1} de {pagination.totalPaginas} · {pagination.totalElementos} registros totales
 
           </p>
 
-          <div className="flex gap-1">
+          <div className="flex gap-3">
 
             <button 
 
@@ -502,7 +518,7 @@ export function BatchList() {
 
               disabled={pagination.pagina === 0 || isLoading}
 
-              className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white border border-gray-200 rounded text-gray-400 hover:text-[#0D1B4B] hover:border-[#0D1B4B] disabled:opacity-30 transition-all"
+              className="px-6 py-2.5 text-sm font-semibold bg-white border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-[#0D1B4B] hover:text-white hover:border-[#0D1B4B] disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
 
             >
 
@@ -516,7 +532,7 @@ export function BatchList() {
 
               disabled={pagination.pagina + 1 >= pagination.totalPaginas || isLoading}
 
-              className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white border border-gray-200 rounded text-gray-400 hover:text-[#0D1B4B] hover:border-[#0D1B4B] disabled:opacity-30 transition-all"
+              className="px-6 py-2.5 text-sm font-semibold bg-white border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-[#0D1B4B] hover:text-white hover:border-[#0D1B4B] disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
 
             >
 

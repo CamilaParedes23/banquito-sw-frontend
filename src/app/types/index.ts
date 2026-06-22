@@ -48,7 +48,7 @@ export type NotificationType = 'PAGO_EXITOSO' | 'PAGO_RECHAZADO';
 
 
 
-export type SettlementStatus = 'PENDIENTE' | 'COMPLETADO' | 'RECHAZADO';
+export type SettlementStatus = 'PENDIENTE' | 'CERRADO' | 'RECHAZADO';
 
 
 
@@ -59,6 +59,10 @@ export interface User {
   username: string;
 
   role: UserRole;
+
+  roles?: string[];
+
+  customerUuid?: string;
 
   companyName?: string;
 
@@ -163,6 +167,5 @@ export interface ServiceTypeConfig {
   estado: string;
 
 }
-
 
 

@@ -4,6 +4,7 @@ import { Dashboard } from './pages/Dashboard';
 import { BatchList } from './pages/batches/BatchList';
 import { BatchUpload } from './pages/batches/BatchUpload';
 import { BatchDetail } from './pages/batches/BatchDetail';
+import { ClearingConsolidated } from './pages/clearing/ClearingConsolidated';
 import { ServiceTypes } from './pages/config/ServiceTypes';
 import { Tariffs } from './pages/config/Tariffs';
 import { SystemParameters } from './pages/config/SystemParameters';
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
           { path: 'batches/all', Component: BatchList },
           { path: 'batches/upload', Component: BatchUpload },
           { path: 'batches/:id', Component: BatchDetail },
+          { path: 'clearing', Component: ClearingConsolidated },
           { path: 'config/services', Component: ServiceTypes },
           { path: 'config/tariffs', Component: Tariffs },
           { path: 'config/parameters', Component: SystemParameters },

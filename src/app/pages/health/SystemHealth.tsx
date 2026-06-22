@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ConfigService } from '../../services/configService';
-import { ENV } from '../../config/env';
 import { RefreshCw, CheckCircle, XCircle, AlertCircle, Activity, Database, Server, Mail, Wifi } from 'lucide-react';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8010/api/v1';
 
 interface SystemParams {
   horaCorteProceso?: string;
@@ -66,7 +67,7 @@ export function SystemHealth() {
       label: 'Conectividad de Red',
       icon: <Wifi className="w-5 h-5" />,
       status: isUp ? 'UP' : 'DOWN',
-      detail: isUp ? `${ENV.API_BASE_URL} alcanzable` : 'No se puede contactar el servidor',
+      detail: isUp ? `${API_BASE_URL} alcanzable` : 'No se puede contactar el servidor',
     },
   ];
 
@@ -162,7 +163,7 @@ export function SystemHealth() {
       <div className="bg-gray-50 border-l-4 border-gray-300 p-4 rounded-r-lg">
         <p className="text-xs text-gray-600 leading-relaxed">
           <strong>Fuente:</strong> El estado se verifica consultando la API del Switch en{' '}
-          <code className="bg-gray-100 px-1 rounded">{ENV.API_BASE_URL}</code>. 
+          <code className="bg-gray-100 px-1 rounded">{API_BASE_URL}</code>. 
           Se actualiza cada 30 segundos en segundo plano.
         </p>
       </div>

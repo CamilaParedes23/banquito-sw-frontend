@@ -1,41 +1,46 @@
 import { apiClient } from './apiClient';
 
 export const BatchService = {
-  uploadBatch: (formData: FormData) => 
-    apiClient('/pagos-masivos/lotes', { method: 'POST', body: formData }),
+  uploadBatch: (formData: FormData) =>
+    apiClient('/batches/upload', { method: 'POST', body: formData }),
 
   getBatches: (params?: Record<string, string>) => {
     const query = params ? `?${new URLSearchParams(params).toString()}` : '';
-    return apiClient(`/pagos-masivos/lotes${query}`, { method: 'GET' });
+    return apiClient(`/batches${query}`, { method: 'GET' });
   },
 
   getBatchLines: (uuid: string, params?: Record<string, string>) => {
     const query = params ? `?${new URLSearchParams(params).toString()}` : '';
-    return apiClient(`/pagos-masivos/lotes/${uuid}/lineas${query}`, { method: 'GET' });
+    return apiClient(`/batches/${uuid}/lines${query}`, { method: 'GET' });
   },
 
-  validateBatch: (uuid: string) => 
-    apiClient(`/pagos-masivos/lotes/${uuid}/validar`, { method: 'POST' }),
+  validateBatch: (uuid: string) =>
+    Promise.resolve({ success: true, message: 'Validación pendiente de implementación' }),
 
-  processBatch: (uuid: string) => 
-    apiClient(`/pagos-masivos/lotes/${uuid}/procesar`, { method: 'POST' }),
+  processBatch: (uuid: string) =>
+    Promise.resolve({ success: true, message: 'Procesamiento pendiente de implementación' }),
 
-  liquidateBatch: (uuid: string) => 
-    apiClient(`/pagos-masivos/lotes/${uuid}/liquidar`, { method: 'POST' }),
+  liquidateBatch: (uuid: string) =>
+    Promise.resolve({ success: true, message: 'Liquidación pendiente de implementación' }),
 
-  annulBatch: (uuid: string, motivo: string) => 
-    apiClient(`/pagos-masivos/lotes/${uuid}`, { 
-      method: 'DELETE', 
-      body: JSON.stringify({ motivo }),
-      headers: { 'Content-Type': 'application/json' }
-    }),
+  annulBatch: (uuid: string, motivo: string) =>
+    Promise.resolve({ success: true, message: 'Anulación pendiente de implementación' }),
 
-  getBatchNovedades: (uuid: string) => 
-    apiClient(`/pagos-masivos/lotes/${uuid}/novedades?formato=JSON`, { method: 'GET' }),
+  getBatchNovedades: (uuid: string) =>
+    apiClient(`/batches/${uuid}/reports/novelties`, { method: 'GET' }),
 
-  getBatchComprobante: (uuid: string) => 
-    apiClient(`/pagos-masivos/lotes/${uuid}/comprobante?formato=JSON`, { method: 'GET' }),
+  getBatchNovedadesDetails: (uuid: string) =>
+    apiClient(`/batches/${uuid}/novelties/details`, { method: 'GET' }),
 
-  getBatchStatus: (uuid: string) => 
-    apiClient(`/pagos-masivos/lotes/${uuid}/estado`, { method: 'GET' })
+  getBatchComprobante: (uuid: string) =>
+    apiClient(`/batches/${uuid}/receipts/corporate`, { method: 'GET' }),
+
+  getBatchCommission: (uuid: string) =>
+    apiClient(`/batches/${uuid}/commission`, { method: 'GET' }),
+
+  getBatchClearingFile: (uuid: string) =>
+    apiClient(`/batches/${uuid}/clearing-file`, { method: 'GET' }),
+
+  getBatchStatus: (uuid: string) =>
+    apiClient(`/batches/${uuid}`, { method: 'GET' })
 };

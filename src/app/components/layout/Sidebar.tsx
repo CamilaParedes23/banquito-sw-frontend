@@ -74,6 +74,18 @@ const menuItems: MenuItem[] = [
 
   {
 
+    path: '/clearing',
+
+    label: 'Compensación Off-Us',
+
+    icon: <FileSpreadsheet className="w-5 h-5" />,
+
+    roles: ['EMPRESA', 'OPERADOR', 'AUDITOR', 'ADMIN'],
+
+  },
+
+  {
+
     path: '/batches/all',
 
     label: 'Todos los Lotes',
@@ -150,13 +162,13 @@ export function Sidebar() {
 
   return (
 
-    <aside className="w-64 bg-[#0D1B4B] text-white flex flex-col">
+    <aside className="w-64 bg-gradient-to-b from-[#0D1B4B] to-[#1a2d5f] text-white flex flex-col shadow-2xl">
 
-      <div className="p-6 border-b border-[#1e3a8a]">
+      <div className="p-6 border-b border-white/10">
 
         <div className="flex items-center gap-3">
 
-          <div className="bg-[#C9A84C] p-2 rounded-lg">
+          <div className="bg-gradient-to-br from-[#C9A84C] to-[#d4b962] p-2.5 rounded-xl shadow-lg">
 
             <Building2 className="w-6 h-6 text-[#0D1B4B]" />
 
@@ -164,9 +176,9 @@ export function Sidebar() {
 
           <div>
 
-            <h1 className="font-bold text-lg">BanQuito</h1>
+            <h1 className="font-bold text-xl tracking-tight">Banco BanQuito</h1>
 
-            <p className="text-xs text-gray-300">Switch de Pagos</p>
+            <p className="text-xs text-gray-300 font-medium">Switch de Pagos</p>
 
           </div>
 
@@ -176,7 +188,7 @@ export function Sidebar() {
 
 
 
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
 
         {filteredMenuItems.map((item) => {
 
@@ -190,13 +202,13 @@ export function Sidebar() {
 
               to={item.path}
 
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 ${
 
                 isActive
 
-                  ? 'bg-[#C9A84C] text-[#0D1B4B] font-medium'
+                  ? 'bg-gradient-to-r from-[#C9A84C] to-[#d4b962] text-[#0D1B4B] font-semibold shadow-lg scale-105'
 
-                  : 'text-gray-300 hover:bg-[#1e3a8a] hover:text-white'
+                  : 'text-gray-300 hover:bg-white/10 hover:text-white hover:translate-x-1'
 
               }`}
 
@@ -204,7 +216,7 @@ export function Sidebar() {
 
               {item.icon}
 
-              <span>{item.label}</span>
+              <span className="text-sm">{item.label}</span>
 
             </Link>
 
@@ -216,13 +228,13 @@ export function Sidebar() {
 
 
 
-      <div className="p-4 border-t border-[#1e3a8a]">
+      <div className="p-4 border-t border-white/10 bg-black/20">
 
-        <div className="text-xs text-gray-400">
+        <div className="text-xs text-gray-400 space-y-1">
 
-          <p>Versión 2.0.1</p>
+          <p className="font-medium text-gray-300">Versión 2.0.1</p>
 
-          <p className="mt-1">© 2026 BanQuito</p>
+          <p className="text-gray-500">© 2026 Banco BanQuito</p>
 
         </div>
 
@@ -233,4 +245,3 @@ export function Sidebar() {
   );
 
 }
-

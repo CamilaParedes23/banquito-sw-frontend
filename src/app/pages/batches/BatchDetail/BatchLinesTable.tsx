@@ -1,10 +1,47 @@
-import { CheckCircle2, XCircle } from 'lucide-react';
 import { StatusBadge } from '../../../components/shared/StatusBadge';
-import { LineaPagoResponse } from '../../../types/responses';
-import { LineStatus } from '../../../types';
+
+interface NovedadesLine {
+  sequenceNumber: number;
+  beneficiaryName: string;
+  destinationAccountNumber: string;
+  amount: number;
+  finalStatus: string;
+  errorMessage?: string;
+  processedAt?: string;
+}
 
 interface BatchLinesTableProps {
-  lines: LineaPagoResponse[];
+  lines: NovedadesLine[];
+}
+
+function extractReadableMessage(errorMessage?: string): string {
+  if (!errorMessage) return '—';
+
+  // Try to extract "message" from JSON embedded in the string
+  const messageMatch = errorMessage.match(/"message"\s*:\s*"([^"]+)"/);
+  if (messageMatch) {
+    return messageMatch[1];
+  }
+
+  // Fallback: extract after "body=" if present
+  const bodyMatch = errorMessage.match(/body=\{[^}]*\}/);
+  if (bodyMatch) {
+    try {
+      const jsonStr = bodyMatch[0].replace('body=', '');
+      const parsed = JSON.parse(jsonStr);
+      if (parsed.message) return parsed.message;
+      if (parsed.code) return parsed.code;
+    } catch {
+      // ignore parse errors
+    }
+  }
+
+  // If too long, truncate
+  if (errorMessage.length > 80) {
+    return errorMessage.substring(0, 80) + '...';
+  }
+
+  return errorMessage;
 }
 
 export function BatchLinesTable({ lines }: BatchLinesTableProps) {
@@ -15,42 +52,31 @@ export function BatchLinesTable({ lines }: BatchLinesTableProps) {
           <tr className="text-[10px] font-bold text-gray-400 uppercase border-b border-gray-100">
             <th className="pb-3">Sec.</th>
             <th className="pb-3">Beneficiario</th>
-            <th className="pb-3">Concepto</th>
+            <th className="pb-3">Cuenta Destino</th>
             <th className="pb-3 text-right">Monto</th>
             <th className="pb-3 text-center">Estado</th>
             <th className="pb-3">Mensaje Motor</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-50 text-sm">
-          {lines.map((l) => (
-            <tr key={l.uuidOperacionSwitch} className="hover:bg-gray-50 transition-colors">
-              <td className="py-4 text-gray-400 font-mono">{l.secuencial}</td>
+          {lines.map((l, index) => (
+            <tr key={index} className="hover:bg-gray-50 transition-colors">
+              <td className="py-4 text-gray-400 font-mono">{l.sequenceNumber}</td>
               <td className="py-4">
-                <p className="font-bold text-gray-900">{l.nombreBeneficiario}</p>
+                <p className="font-bold text-gray-900">{l.beneficiaryName}</p>
                 <p className="text-[10px] text-gray-500 font-mono">
-                  {l.identificacionBeneficiario} | {l.cuentaDestino}
+                  {l.destinationAccountNumber}
                 </p>
               </td>
-              <td className="py-4 text-xs text-gray-600 max-w-[200px] truncate" title={l.conceptoReferencia}>
-                {l.conceptoReferencia || '-'}
-              </td>
-              <td className="py-4 text-right font-bold text-gray-900">
-                ${l.monto.toLocaleString('es-EC', { minimumFractionDigits: 2 })}
+              <td className="py-4 text-gray-600">{l.destinationAccountNumber}</td>
+              <td className="py-4 text-right font-mono font-bold text-gray-900">
+                ${l.amount.toFixed(2)}
               </td>
               <td className="py-4 text-center">
-                <StatusBadge status={l.estado as LineStatus} size="sm" />
+                <StatusBadge status={l.finalStatus} />
               </td>
-              <td className="py-4 text-xs">
-                {l.mensajeError ? (
-                  <span className="text-red-600 font-semibold flex items-center gap-1">
-                    <XCircle className="w-3 h-3" />
-                    {l.mensajeError}
-                  </span>
-                ) : l.estado === 'EXITOSA' ? (
-                  <CheckCircle2 className="w-4 h-4 text-green-500 inline" />
-                ) : (
-                  '-'
-                )}
+              <td className="py-4 text-gray-600 text-xs max-w-xs truncate" title={l.errorMessage}>
+                {extractReadableMessage(l.errorMessage)}
               </td>
             </tr>
           ))}

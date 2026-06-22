@@ -1,142 +1,49 @@
-# 📋 Guía de Configuración de Endpoints por Ambiente
+# Configuracion de Endpoints por Ambiente
 
-## Resumen Rápido ✅
+## Desarrollo Local Core R9I
 
-Todos los endpoints han sido movidos a **variables de entorno**. Esto facilita el despliegue en diferentes ambientes sin necesidad de cambiar código.
-
----
-
-## 🚀 Configuración por Ambiente
-
-### 1️⃣ Desarrollo Local
-
-Usar el archivo `.env.local` (creado automáticamente):
+En pruebas locales R9I el frontend separa autenticacion Core y APIs Switch:
 
 ```env
-VITE_API_BASE_URL=http://localhost:8080/api/v1
+VITE_CORE_KONG_BASE_URL=http://localhost:8000
+VITE_API_BASE_URL=http://localhost:8010/api/v1
 VITE_ENVIRONMENT=development
+VITE_MOCK_AUTH_ENABLED=false
 ```
 
-**Cómo usar:**
-```bash
-npm run dev  # Vite leerá automáticamente .env.local
-```
+- `VITE_CORE_KONG_BASE_URL` apunta al Kong integrado de Core R9I.
+- `VITE_API_BASE_URL` apunta al Kong local `switch-only`.
+- `localhost:8010` no debe usarse para Auth/Core.
+- `localhost:8000` no debe usarse para rutas Switch en esta prueba local.
 
-### 2️⃣ Staging/Testing
+## Staging/Produccion
+
+En ambientes integrados debe existir un gateway unificado o variables equivalentes definidas por despliegue:
 
 ```env
-VITE_API_BASE_URL=https://staging-api.banquito.com/api/v1
-VITE_ENVIRONMENT=staging
-```
-
-### 3️⃣ Producción
-
-```env
+VITE_CORE_KONG_BASE_URL=https://api.banquito.com
 VITE_API_BASE_URL=https://api.banquito.com/api/v1
 VITE_ENVIRONMENT=production
 VITE_MOCK_AUTH_ENABLED=false
 ```
 
----
+## Archivos
 
-## 📁 Archivos Relacionados
+| Archivo | Proposito | Versionable |
+| --- | --- | --- |
+| `.env.example` | Plantilla documentada | Si |
+| `.env.local` | Configuracion local | No |
+| `.env` | Configuracion local del workspace | Depende del flujo del equipo |
 
-| Archivo | Propósito | Versionable |
-|---------|----------|-----------|
-| `.env.example` | Plantilla de variables (documentación) | ✅ Sí |
-| `.env.local` | Configuración local de desarrollo | ❌ No (.gitignore) |
-| `.env.staging` | Configuración de staging | ❌ No (usar CI/CD) |
-| `.env.production` | Configuración de producción | ❌ No (usar CI/CD) |
+## Verificacion Rapida
 
----
-
-## 🔐 Configuración en CI/CD (GitHub Actions)
-
-**Ejemplo para despliegue:**
-
-```yaml
-- name: Build para Producción
-  run: npm run build
-  env:
-    VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
-    VITE_ENVIRONMENT: production
-    VITE_MOCK_AUTH_ENABLED: false
+```powershell
+node node_modules/vite/bin/vite.js build
+node node_modules/vite/bin/vite.js --host 127.0.0.1
 ```
 
-**Guardar en GitHub Secrets:**
-1. Ir a `Settings → Secrets and variables → Actions`
-2. Click en `New repository secret`
-3. Agregar:
-   - `VITE_API_BASE_URL` = `https://api.banquito.com/api/v1`
-   - `VITE_ENVIRONMENT` = `production`
+URL local:
 
----
-
-## 📝 Variables de Entorno Disponibles
-
-```env
-# API
-VITE_API_BASE_URL=http://localhost:8080/api/v1
-
-# Aplicación
-VITE_APP_NAME=BanQuito
-VITE_APP_SUBTITLE=Switch Pagos Masivos
-VITE_ENVIRONMENT=development
-
-# Autenticación
-VITE_MOCK_AUTH_ENABLED=false
-VITE_DEFAULT_ADMIN_USER=admin
+```text
+http://127.0.0.1:5173/switch/
 ```
-
----
-
-## ✨ Cambios Realizados
-
-### Corregidos:
-- ❌ `localhost:8080` en `SystemHealth.tsx` → ✅ Usa `ENV.API_BASE_URL`
-- ❌ URLs hardcodeadas → ✅ Variables de entorno
-
-### Creados:
-- ✅ `.env.example` - Plantilla para documentación
-- ✅ `.env.local` - Configuración local de desarrollo
-- ✅ `ENDPOINTS_VERIFICATION.md` - Reporte de auditoría
-
-### Verificados:
-- ✅ `apiClient.ts` - Usa ENV correctamente
-- ✅ `env.ts` - Configuración centralizada
-- ✅ Todos los servicios usan `apiClient`
-- ✅ `.gitignore` ya excluye `.env.local`
-
----
-
-## 🎯 Próximos Pasos
-
-1. **Verificar que todo funciona:**
-   ```bash
-   npm run dev
-   ```
-
-2. **Para CI/CD:** Configurar secrets en GitHub/GitLab
-
-3. **Para producción:** Usar las variables configuradas en secrets
-
----
-
-## ❓ Preguntas Frecuentes
-
-**P: ¿Necesito crear `.env.local` manualmente?**
-A: No, ya está creado. Solo editalo según tu ambiente local.
-
-**P: ¿Puedo versionear `.env.production`?**
-A: No, úsalo en CI/CD con secrets en GitHub.
-
-**P: ¿Cómo cambio el endpoint en producción?**
-A: Configura la variable `VITE_API_BASE_URL` en los secrets de tu CI/CD.
-
----
-
-## 📞 Soporte
-
-Para más información sobre Vite y variables de entorno:
-- [Vite Env Variables](https://vitejs.dev/guide/env-and-mode.html)
-- [Our Documentation](./ENDPOINTS_VERIFICATION.md)

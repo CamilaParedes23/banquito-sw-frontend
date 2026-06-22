@@ -1,0 +1,8 @@
+H,1792103456001,NOM,2026-06-12T10:00:00-05:00,0010000010599,6,60.00
+D,1,1792103456001,Comercial Sierra Azul S.A.,0010000010600,10,10.00,Pago nómina empleado A,pagos@sierraazul.com.ec
+D,2,1792103456001,Comercial Sierra Azul S.A.,0010000019999,10,10.00,Pago nómina empleado B (cuenta inexistente),pagos@sierraazul.com.ec
+D,3,1792103456001,Comercial Sierra Azul S.A.,0010000010601,10,10.00,Pago nómina empleado C,pagos@sierraazul.com.ec
+D,4,1792103456001,Comercial Sierra Azul S.A.,0010000018888,10,10.00,Pago nómina empleado D (cuenta inexistente),pagos@sierraazul.com.ec
+D,5,1792103456001,Comercial Sierra Azul S.A.,0010000010600,10,10.00,Pago nómina empleado E,pagos@sierraazul.com.ec
+D,6,1792103456001,Comercial Sierra Azul S.A.,0010000010601,10,10.00,Pago nómina empleado F,pagos@sierraazul.com.ec
+T,HASH_BATCH_6_2_REJ,6,60.00

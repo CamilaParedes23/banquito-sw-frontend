@@ -17,33 +17,39 @@ export interface ResumenLineasResponse {
 }
 
 export interface EstadoLoteResponse {
-  uuidLote: string;
-  estado: BatchStatus;
-  motivoRechazoGlobal?: string;
-  resumenLineas: ResumenLineasResponse;
-  fechas: FechasLoteResponse;
-  accionesDisponibles: string[];
+  batchId: string;
+  companyRuc: string;
+  fileName: string;
+  receivedAt: string;
+  status: BatchStatus;
+  totalRecords: number;
+  controlAmount: number;
+  serviceType?: string;
+  sourceAccountNumber?: string;
+  validatedAt?: string;
+  fundedAt?: string;
+  accountingDate?: string;
+  coreFundingId?: string;
+  coreTransactionId?: string;
+  message?: string;
 }
 
 export interface ConsultaLoteResponse {
-  uuidLote: string;
-  rucEmpresa: string;
-  tipoServicio: string;
-  nombreArchivo: string;
-  canalIngreso: string;
-  estado: BatchStatus;
-  totalRegistrosDeclarado: number;
-  montoTotalDeclarado: number;
-  fechaRecepcion: string;
-  cuentaMatrizCargo?: string;
-  totalRegistrosValidados?: number;
+  batchId: string;
+  companyRuc: string;
+  fileName: string;
+  receivedAt: string;
+  status: BatchStatus;
+  totalRecords: number;
+  controlAmount: number;
 }
 
 export interface PaginaResponse<T> {
-  contenido: T[];
-  pagina: number;
-  totalPaginas: number;
-  totalElementos: number;
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
 }
 
 export interface LineaPagoResponse {
@@ -71,6 +77,18 @@ export interface LiquidarLoteResponse {
   subtotalComision: number;
   montoIva: number;
   totalDebitado: number;
+}
+
+export interface GeneratedFileResponse {
+  batchId: string;
+  documentId?: string;
+  status?: string;
+  fileName?: string;
+  filePath?: string;
+  contentType?: string;
+  content?: string;
+  generatedAt?: string;
+  totalLines?: number;
 }
 
 export interface HorarioCorteResponse {
