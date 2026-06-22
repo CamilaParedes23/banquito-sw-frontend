@@ -1,4 +1,4 @@
-import { CheckCircle2, XCircle, AlertTriangle, Download, FileSpreadsheet } from 'lucide-react';
+import { Download, FileSpreadsheet } from 'lucide-react';
 import { StatusBadge } from '../../../components/shared/StatusBadge';
 import { generateNovedadesPdf, reporteNovedadesToCsv, downloadTextFile } from '../../../utils/batchReportExport';
 
@@ -7,7 +7,7 @@ interface NovedadesLine {
   nombreBeneficiario: string;
   cuentaDestino: string;
   monto: number;
-  estado: LineStatus;
+  estado: string;
   mensajeError?: string;
 }
 
