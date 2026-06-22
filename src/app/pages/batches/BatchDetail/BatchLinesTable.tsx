@@ -17,18 +17,23 @@ interface BatchLinesTableProps {
 function extractReadableMessage(errorMessage?: string): string {
   if (!errorMessage) return '—';
 
-  // Try to extract "message" from JSON embedded in the string
+  // Extract "message" field from JSON in string
   const messageMatch = errorMessage.match(/"message"\s*:\s*"([^"]+)"/);
   if (messageMatch) {
     return messageMatch[1];
   }
 
-  // Fallback: extract after "body=" if present
-  const bodyMatch = errorMessage.match(/body=\{[^}]*\}/);
+  // Extract "code" field from JSON in string
+  const codeMatch = errorMessage.match(/"code"\s*:\s*"([^"]+)"/);
+  if (codeMatch) {
+    return codeMatch[1];
+  }
+
+  // Try to parse body={...} format
+  const bodyMatch = errorMessage.match(/body=(\{[^}]*\})/);
   if (bodyMatch) {
     try {
-      const jsonStr = bodyMatch[0].replace('body=', '');
-      const parsed = JSON.parse(jsonStr);
+      const parsed = JSON.parse(bodyMatch[1]);
       if (parsed.message) return parsed.message;
       if (parsed.code) return parsed.code;
     } catch {
@@ -36,9 +41,20 @@ function extractReadableMessage(errorMessage?: string): string {
     }
   }
 
-  // If too long, truncate
-  if (errorMessage.length > 80) {
-    return errorMessage.substring(0, 80) + '...';
+  // Handle common error patterns
+  if (errorMessage.includes('ADMIN_INSTITUTION_NOT_FOUND')) {
+    return 'Institución financiera no encontrada';
+  }
+  if (errorMessage.includes('httpStatus=409')) {
+    return 'Conflicto en el procesamiento';
+  }
+  if (errorMessage.includes('httpStatus=404')) {
+    return 'Recurso no encontrado';
+  }
+
+  // Truncate long messages
+  if (errorMessage.length > 60) {
+    return errorMessage.substring(0, 60) + '...';
   }
 
   return errorMessage;

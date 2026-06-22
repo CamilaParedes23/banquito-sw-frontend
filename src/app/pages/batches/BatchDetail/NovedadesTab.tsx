@@ -27,6 +27,52 @@ interface NovedadesTabProps {
   batchId?: string;
 }
 
+function extractReadableMessage(errorMessage?: string): string {
+  if (!errorMessage) return '—';
+
+  // Extract "message" field from JSON in string
+  const messageMatch = errorMessage.match(/"message"\s*:\s*"([^"]+)"/);
+  if (messageMatch) {
+    return messageMatch[1];
+  }
+
+  // Extract "code" field from JSON in string
+  const codeMatch = errorMessage.match(/"code"\s*:\s*"([^"]+)"/);
+  if (codeMatch) {
+    return codeMatch[1];
+  }
+
+  // Try to parse body={...} format
+  const bodyMatch = errorMessage.match(/body=(\{[^}]*\})/);
+  if (bodyMatch) {
+    try {
+      const parsed = JSON.parse(bodyMatch[1]);
+      if (parsed.message) return parsed.message;
+      if (parsed.code) return parsed.code;
+    } catch {
+      // ignore parse errors
+    }
+  }
+
+  // Handle common error patterns
+  if (errorMessage.includes('ADMIN_INSTITUTION_NOT_FOUND')) {
+    return 'Institución financiera no encontrada';
+  }
+  if (errorMessage.includes('httpStatus=409')) {
+    return 'Conflicto en el procesamiento';
+  }
+  if (errorMessage.includes('httpStatus=404')) {
+    return 'Recurso no encontrado';
+  }
+
+  // Truncate long messages
+  if (errorMessage.length > 60) {
+    return errorMessage.substring(0, 60) + '...';
+  }
+
+  return errorMessage;
+}
+
 export function NovedadesTab({ isLoading, data, batchId }: NovedadesTabProps) {
   if (isLoading) {
     return <div className="text-center py-12 text-gray-400">Cargando reporte de novedades...</div>;
@@ -103,7 +149,9 @@ export function NovedadesTab({ isLoading, data, batchId }: NovedadesTabProps) {
                 <td className="py-3 text-center">
                   <StatusBadge status={l.estado} size="sm" />
                 </td>
-                <td className="py-3 text-xs text-gray-500">{l.mensajeError || '-'}</td>
+                <td className="py-3 text-xs text-gray-500" title={l.mensajeError}>
+                  {extractReadableMessage(l.mensajeError)}
+                </td>
               </tr>
             ))}
           </tbody>
