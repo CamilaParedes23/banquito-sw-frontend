@@ -23,8 +23,8 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
-          context: ./banquito-sw-frontend
-          file: ./banquito-sw-frontend/Dockerfile
+          context: .
+          file: ./Dockerfile
           push: true
           tags: andrescarrillo2001/banquito-sw-frontend:latest
           build-args: |
