@@ -13,6 +13,7 @@ import {
   ValidacionLoteResponse,
   LiquidarLoteResponse,
   TarifaServicioResponse,
+  ValidationErrorResponse,
 } from '../types/responses';
 
 interface CommissionResult {
@@ -79,7 +80,7 @@ export function useBatchDetail(uuid: string | undefined) {
   );
   const [fees, setFees] = useState<any>(null);
   const [liquidationResult, setLiquidationResult] = useState<LiquidarLoteResponse | null>(null);
-  const [validationErrors, setValidationErrors] = useState<Array<{ codigo: string; mensaje: string }>>([]);
+  const [validationErrors, setValidationErrors] = useState<ValidationErrorResponse[]>([]);
   const [novedades, setNovedades] = useState<NovedadesData | null>(null);
   const [comprobante, setComprobante] = useState<ComprobanteData | null>(null);
   const [isLoadingReports, setIsLoadingReports] = useState(false);
@@ -93,13 +94,11 @@ export function useBatchDetail(uuid: string | undefined) {
     setLiquidationResult(null);
 
     try {
-      const [status, listResponse] = await Promise.all([
-        BatchService.getBatchStatus(uuid),
-        BatchService.getBatches({ page: '0', size: '100' }),
-      ]);
+      const status = await BatchService.getBatchStatus(uuid);
+      const listResponse = await BatchService.getBatches({ page: '0', size: '100' }).catch(() => null);
 
       const listItem =
-        listResponse.content?.find(
+        listResponse?.content?.find(
           (b: ConsultaLoteResponse) =>
             String(b.batchId).toLowerCase() === String(uuid).toLowerCase()
         ) ?? null;
@@ -110,6 +109,11 @@ export function useBatchDetail(uuid: string | undefined) {
         ...status,
         batchId: status.batchId || uuid,
       }));
+
+      if (status.status === 'RECHAZADO') {
+        const validationData = await BatchService.getBatchValidationErrors(uuid).catch(() => null);
+        setValidationErrors(Array.isArray(validationData?.errors) ? validationData.errors : []);
+      }
 
       const feesData = await ConfigService.getPricingRules().catch(() => null);
       if (feesData) setFees(Array.isArray(feesData) ? feesData[0] : feesData);

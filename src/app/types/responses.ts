@@ -70,6 +70,17 @@ export interface ValidacionLoteResponse {
   errores: Array<{ codigo: string; mensaje: string }>;
 }
 
+export interface ValidationErrorResponse {
+  code: string;
+  field?: string;
+  message: string;
+}
+
+export interface BatchValidationErrorsResponse {
+  batchId: string;
+  errors: ValidationErrorResponse[];
+}
+
 export interface LiquidarLoteResponse {
   uuidLote: string;
   estado: BatchStatus;

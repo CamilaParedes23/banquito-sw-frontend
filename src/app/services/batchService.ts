@@ -41,6 +41,9 @@ export const BatchService = {
   getBatchClearingFile: (uuid: string) =>
     apiClient(`/batches/${uuid}/clearing-file`, { method: 'GET' }),
 
+  getBatchValidationErrors: (uuid: string) =>
+    apiClient(`/batches/${uuid}/validation-errors`, { method: 'GET' }),
+
   getBatchStatus: (uuid: string) =>
     apiClient(`/batches/${uuid}`, { method: 'GET' })
 };

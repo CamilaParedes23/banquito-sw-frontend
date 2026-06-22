@@ -28,7 +28,7 @@ export function BatchDetail() {
 
   const navigate = useNavigate();
 
-  const { batch, novedades } = useBatchDetail(id);
+  const { batch, novedades, validationErrors } = useBatchDetail(id);
 
   const [activeTab, setActiveTab] = useState<'lines' | 'novedades' | 'comprobante' | 'settlement'>('lines');
 
@@ -161,14 +161,34 @@ export function BatchDetail() {
 
       <BatchHeader batch={batch} />
 
-      {batch.message && (
+      {(batch.message || validationErrors.length > 0) && (
         <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6 flex items-start gap-4 shadow-lg">
           <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
             <AlertTriangle className="w-6 h-6 text-red-600" />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <h4 className="text-base font-bold text-red-800 mb-1">Lote Rechazado</h4>
-            <p className="text-sm text-red-700">{batch.message}</p>
+            {batch.message && <p className="text-sm text-red-700">{batch.message}</p>}
+            {validationErrors.length > 0 && (
+              <div className="mt-4 space-y-2">
+                {validationErrors.map((error, index) => (
+                  <div
+                    key={`${error.code}-${error.field || index}`}
+                    className="rounded-lg border border-red-200 bg-white/70 px-4 py-3"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-md bg-red-100 px-2 py-1 text-xs font-bold text-red-800">
+                        {error.code}
+                      </span>
+                      {error.field && (
+                        <span className="font-mono text-xs text-red-700">{error.field}</span>
+                      )}
+                    </div>
+                    <p className="mt-2 text-sm text-red-700">{error.message}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
