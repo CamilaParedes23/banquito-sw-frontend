@@ -48,6 +48,7 @@ export function getStatusLabel(status: string): string {
     APPROVED: 'Aprobado',
     ACREDITADA_ON_US: 'Acreditada On-Us',
     COMPENSADA_OFF_US: 'Compensada Off-Us',
+    INCLUIDA_ARCHIVO_COMPENSACION: 'Incluida en compensación',
     REJECTED_LINE: 'Rechazada',
     FAILED_LINE: 'Fallida',
     // Estados de línea (frontend español)
@@ -129,6 +130,7 @@ export function StatusBadge({ status, size = 'md', showIcon = false }: StatusBad
       case 'CANCELADA':
         return { color: 'bg-gray-400 text-gray-800 border-gray-500', label: getStatusLabel(status) };
       case 'COMPENSADA_OFF_US':
+      case 'INCLUIDA_ARCHIVO_COMPENSACION':
         return { color: 'bg-blue-500 text-white border-blue-600', label: getStatusLabel(status) };
       case 'DUPLICATE':
         return { color: 'bg-purple-500 text-white border-purple-600', label: getStatusLabel(status) };

@@ -393,7 +393,7 @@ export function ClearingConsolidated() {
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="min-w-full text-left text-sm">
+                  <table className="w-full text-left text-sm">
                     <thead className="bg-gray-50 text-xs uppercase text-gray-500">
                       <tr>
                         <th className="px-4 py-3">Batch ID</th>
@@ -430,7 +430,7 @@ export function ClearingConsolidated() {
                   </h2>
                 </div>
                 <div className="overflow-x-auto p-5">
-                  <table className="min-w-full text-left text-xs">
+                  <table className="w-full text-left text-xs">
                     <thead className="bg-gray-50 uppercase text-gray-500">
                       <tr>
                         <th className="px-3 py-2">BATCH_ID</th>
