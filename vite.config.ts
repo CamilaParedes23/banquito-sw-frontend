@@ -17,7 +17,7 @@ function figmaAssetResolver() {
 }
 
 // Read configuration from environment variables
-const basePath = process.env.VITE_BASE_PATH || '/switch/'
+const basePath = process.env.VITE_BASE_PATH || '/'
 const allowedHostsEnv = process.env.VITE_ALLOWED_HOSTS || 'localhost,127.0.0.1'
 const allowedHosts = allowedHostsEnv.split(',').map(host => host.trim())
 const devServerPort = Number(process.env.VITE_DEV_SERVER_PORT || process.env.FRONTEND_SWITCH_PORT || 5173)
