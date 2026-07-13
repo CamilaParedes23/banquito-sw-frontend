@@ -71,8 +71,8 @@ export function BatchDetail() {
 
 
 
-  const fetchComprobante = async () => {
-    if (comprobanteData || !id) return;
+  const fetchComprobante = async (force = false) => {
+    if ((!force && comprobanteData) || !id) return;
     setComprobanteLoading(true);
     try {
       const data = await BatchService.getBatchComprobante(id);
@@ -113,8 +113,8 @@ export function BatchDetail() {
 
 
 
-  const fetchSettlement = async () => {
-    if ((settlementData && !(settlementData as any)?.error) || !id) return;
+  const fetchSettlement = async (force = false) => {
+    if ((!force && settlementData && !(settlementData as any)?.error) || !id) return;
     setSettlementLoading(true);
     try {
       const [commissionResult, clearingResult] = await Promise.allSettled([
@@ -181,8 +181,16 @@ export function BatchDetail() {
 
   const handleRefreshDetail = async () => {
     setIsRefreshingDetail(true);
+    setComprobanteData(null);
+    setSettlementData(null);
     try {
       await fetchData();
+      if (activeTab === 'comprobante') {
+        await fetchComprobante(true);
+      }
+      if (activeTab === 'settlement') {
+        await fetchSettlement(true);
+      }
       setClockTick(Date.now());
     } finally {
       setIsRefreshingDetail(false);
@@ -262,7 +270,7 @@ export function BatchDetail() {
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-sm font-bold text-emerald-700 shadow-sm transition-all hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <RefreshCw className={`w-4 h-4 ${isRefreshingDetail ? 'animate-spin' : ''}`} />
-                {isRefreshingDetail ? 'Actualizando...' : 'Recargar'}
+                {isRefreshingDetail ? 'Actualizando...' : 'Recargar detalle'}
               </button>
             </div>
 
