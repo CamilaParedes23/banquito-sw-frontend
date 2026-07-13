@@ -16,6 +16,8 @@ export type BatchStatus =
 
   | 'PROCESANDO'
 
+  | 'PROCESANDO_LINEAS'
+
   | 'PROCESADO_PARCIAL'
 
   | 'PROCESADO_TOTAL'

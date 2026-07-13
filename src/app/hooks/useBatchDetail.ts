@@ -14,6 +14,7 @@ import {
   LiquidarLoteResponse,
   TarifaServicioResponse,
   ValidationErrorResponse,
+  BatchSummaryResponse,
 } from '../types/responses';
 
 interface CommissionResult {
@@ -71,6 +72,48 @@ interface ComprobanteData {
   fechaGeneracion?: string;
 }
 
+export interface BatchProgressState {
+  expectedTotalLines: number;
+  finalResultLines: number;
+  observedLines: number;
+  onUsCreditedLines: number;
+  offUsIncludedLines: number;
+  rejectedLines: number;
+  failedLines: number;
+  percent: number;
+  status?: string;
+  billingStatus?: string | null;
+  isAvailable: boolean;
+}
+
+function buildProgress(summary: BatchSummaryResponse | null): BatchProgressState | null {
+  if (!summary) return null;
+  const expectedTotalLines = Number(summary.expectedTotalLines ?? summary.totalLines ?? 0);
+  if (!Number.isFinite(expectedTotalLines) || expectedTotalLines <= 0) return null;
+
+  const finalResultLines = Number(summary.finalResultLines ?? 0);
+  const observedLines = Number(summary.observedLines ?? 0);
+  const onUsCreditedLines = Number(summary.onUsCreditedLines ?? 0);
+  const offUsIncludedLines = Number(summary.offUsIncludedLines ?? 0);
+  const rejectedLines = Number(summary.rejectedLines ?? 0);
+  const failedLines = Number(summary.failedLines ?? 0);
+  const percent = Math.max(0, Math.min(100, Math.round((finalResultLines / expectedTotalLines) * 100)));
+
+  return {
+    expectedTotalLines,
+    finalResultLines,
+    observedLines,
+    onUsCreditedLines,
+    offUsIncludedLines,
+    rejectedLines,
+    failedLines,
+    percent,
+    status: summary.status,
+    billingStatus: summary.billingStatus,
+    isAvailable: true,
+  };
+}
+
 export function useBatchDetail(uuid: string | undefined) {
   const location = useLocation();
   const initialBatch = (location.state as { batch?: ConsultaLoteResponse })?.batch;
@@ -84,6 +127,7 @@ export function useBatchDetail(uuid: string | undefined) {
   const [novedades, setNovedades] = useState<NovedadesData | null>(null);
   const [comprobante, setComprobante] = useState<ComprobanteData | null>(null);
   const [isLoadingReports, setIsLoadingReports] = useState(false);
+  const [progress, setProgress] = useState<BatchProgressState | null>(null);
 
   const statusFetch = useFetchData<EstadoLoteResponse>();
   const listFetch = useFetchData<PaginaResponse<ConsultaLoteResponse>>();
@@ -109,6 +153,14 @@ export function useBatchDetail(uuid: string | undefined) {
         ...status,
         batchId: status.batchId || uuid,
       }));
+
+      const summaryData = await BatchService.getBatchSummary(uuid).catch(() => null);
+      const progressData = buildProgress(summaryData);
+      if (progressData) {
+        setProgress(progressData);
+      } else if (['RECHAZADO', 'FALLIDO', 'ANULADO'].includes(status.status || '')) {
+        setProgress(null);
+      }
 
       if (status.status === 'RECHAZADO') {
         const validationData = await BatchService.getBatchValidationErrors(uuid).catch(() => null);
@@ -141,8 +193,17 @@ export function useBatchDetail(uuid: string | undefined) {
     fetchData();
   }, [fetchData]);
 
-  const isTransitional = ['VALIDANDO', 'ENCOLADO', 'PROCESANDO'].includes(batch.status || '');
-  usePolling(fetchData, isTransitional);
+  const isTransitional = [
+    'RECIBIDO',
+    'VALIDANDO',
+    'VALIDADO',
+    'ENCOLADO',
+    'FONDEADO',
+    'PROCESANDO',
+    'PROCESANDO_LINEAS',
+    'EN_OBSERVACION',
+  ].includes(batch.status || '') || Boolean(progress && progress.percent < 100);
+  usePolling(fetchData, isTransitional, 5000);
 
   const calculateCommission = useCallback(
     (successfulCount: number): CommissionResult => {
@@ -193,6 +254,7 @@ export function useBatchDetail(uuid: string | undefined) {
     setLiquidationResult,
     validationErrors,
     setValidationErrors,
+    progress,
     comprobante,
     isLoadingReports,
     settlement,

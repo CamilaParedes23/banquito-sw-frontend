@@ -38,6 +38,9 @@ export const BatchService = {
   getBatchCommission: (uuid: string) =>
     apiClient(`/batches/${uuid}/commission`, { method: 'GET' }),
 
+  getBatchSummary: (uuid: string) =>
+    apiClient(`/batches/${uuid}/summary`, { method: 'GET' }),
+
   getBatchClearingFile: (uuid: string) =>
     apiClient(`/batches/${uuid}/clearing-file`, { method: 'GET' }),
 

@@ -2,9 +2,10 @@ import { useState } from 'react';
 
 import { useParams, useNavigate } from 'react-router';
 
-import { ArrowLeft, AlertTriangle, FileText, AlertCircle, BarChart3 } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, FileText, AlertCircle, BarChart3, Activity } from 'lucide-react';
 
 import { StatusBadge } from '../../components/shared/StatusBadge';
+import { Progress } from '../../components/ui/progress';
 
 import { useBatchDetail } from '../../hooks/useBatchDetail';
 
@@ -35,7 +36,7 @@ export function BatchDetail() {
 
   const navigate = useNavigate();
 
-  const { batch, novedades, validationErrors } = useBatchDetail(id);
+  const { batch, novedades, validationErrors, progress } = useBatchDetail(id);
 
   const [activeTab, setActiveTab] = useState<'lines' | 'novedades' | 'comprobante' | 'settlement'>('lines');
 
@@ -147,6 +148,10 @@ export function BatchDetail() {
     Boolean(batchRejectionMessage) &&
     (batchRejectionMessage !== UNKNOWN_ERROR_MESSAGE || validationErrors.length === 0);
 
+  const shouldShowProgress =
+    Boolean(progress?.isAvailable) &&
+    !['RECHAZADO', 'FALLIDO', 'ANULADO'].includes(batch.status || '');
+
 
 
 
@@ -172,6 +177,52 @@ export function BatchDetail() {
       </div>
 
       <BatchHeader batch={batch} />
+
+      {shouldShowProgress && progress && (
+        <div className="bg-white border border-emerald-100 rounded-2xl p-6 shadow-xl">
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center">
+                  <Activity className="w-5 h-5 text-emerald-700" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-[#0D1B4B]">Progreso de procesamiento</h3>
+                  <p className="text-sm text-gray-500">
+                    {progress.finalResultLines} de {progress.expectedTotalLines} líneas procesadas
+                  </p>
+                </div>
+              </div>
+              <div className="text-left md:text-right">
+                <p className="text-3xl font-black text-emerald-700">{progress.percent}%</p>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  {progress.percent >= 100 ? 'Procesamiento completo' : 'En ejecución'}
+                </p>
+              </div>
+            </div>
+
+            <Progress
+              value={progress.percent}
+              className="h-3 bg-emerald-100 [&_[data-slot=progress-indicator]]:bg-emerald-600"
+            />
+
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              {[
+                { label: 'Observadas', value: progress.observedLines },
+                { label: 'Acreditadas', value: progress.onUsCreditedLines },
+                { label: 'Off-Us', value: progress.offUsIncludedLines },
+                { label: 'Rechazadas', value: progress.rejectedLines },
+                { label: 'Fallidas', value: progress.failedLines },
+              ].map((item) => (
+                <div key={item.label} className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+                  <p className="text-xs font-semibold text-gray-500">{item.label}</p>
+                  <p className="text-xl font-bold text-gray-900">{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {(batch.message || validationErrors.length > 0) && (
         <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6 flex items-start gap-4 shadow-lg">

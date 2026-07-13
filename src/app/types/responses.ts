@@ -82,6 +82,25 @@ export interface BatchValidationErrorsResponse {
   errors: ValidationErrorResponse[];
 }
 
+export interface BatchSummaryResponse {
+  batchId: string;
+  status?: string;
+  expectedTotalLines?: number;
+  totalLines?: number;
+  observedLines?: number;
+  finalResultLines?: number;
+  onUsCreditedLines?: number;
+  offUsIncludedLines?: number;
+  rejectedLines?: number;
+  failedLines?: number;
+  billableLines?: number;
+  billingStatus?: string | null;
+  commissionSubtotal?: number | null;
+  totalChargedAmount?: number | null;
+  completedAt?: string | null;
+  generatedAt?: string | null;
+}
+
 export interface LiquidarLoteResponse {
   uuidLote: string;
   estado: BatchStatus;
