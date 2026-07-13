@@ -9,7 +9,9 @@ interface NovedadesLine {
   cuentaDestino: string;
   monto: number;
   estado: string;
+  codigoError?: string | null;
   mensajeError?: string;
+  tipoNovedad?: string | null;
 }
 
 interface NovedadesData {
@@ -28,9 +30,15 @@ interface NovedadesTabProps {
   batchId?: string;
 }
 
-function extractReadableMessage(errorMessage?: string): string {
-  if (!errorMessage) return '---';
-  return mapBatchRejectionMessage(errorMessage);
+function isInformativeLine(line: NovedadesLine): boolean {
+  return line.tipoNovedad === 'INFORMATIVA'
+    || ['ACREDITADA_ON_US', 'INCLUIDA_ARCHIVO_COMPENSACION'].includes(line.estado);
+}
+
+function extractReadableMessage(line: NovedadesLine): string {
+  if (!line.mensajeError) return '---';
+  if (isInformativeLine(line) && !line.codigoError) return line.mensajeError;
+  return mapBatchRejectionMessage(line.mensajeError);
 }
 
 export function NovedadesTab({ isLoading, data, batchId }: NovedadesTabProps) {
@@ -46,7 +54,7 @@ export function NovedadesTab({ isLoading, data, batchId }: NovedadesTabProps) {
     ...data,
     lineas: (data.lineas || []).map((line) => ({
       ...line,
-      mensajeError: extractReadableMessage(line.mensajeError),
+      mensajeError: extractReadableMessage(line),
     })),
   };
 

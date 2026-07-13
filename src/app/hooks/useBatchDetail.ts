@@ -30,7 +30,10 @@ interface NovedadesLine {
   destinationAccountNumber: string;
   amount: number;
   finalStatus: string;
+  errorCode?: string | null;
   errorMessage?: string;
+  errorSource?: string | null;
+  noveltyType?: string | null;
   processedAt?: string;
 }
 
@@ -83,6 +86,9 @@ export interface BatchProgressState {
   percent: number;
   status?: string;
   billingStatus?: string | null;
+  completedAt?: string | null;
+  generatedAt?: string | null;
+  updatedAt?: string | null;
   isAvailable: boolean;
 }
 
@@ -110,6 +116,9 @@ function buildProgress(summary: BatchSummaryResponse | null): BatchProgressState
     percent,
     status: summary.status,
     billingStatus: summary.billingStatus,
+    completedAt: summary.completedAt,
+    generatedAt: summary.generatedAt,
+    updatedAt: summary.updatedAt,
     isAvailable: true,
   };
 }
@@ -180,7 +189,10 @@ export function useBatchDetail(uuid: string | undefined) {
             destinationAccountNumber: n.destinationAccountNumber,
             amount: n.amount,
             finalStatus: n.finalStatus,
+            errorCode: n.errorCode,
             errorMessage: n.errorMessage,
+            errorSource: n.errorSource,
+            noveltyType: n.noveltyType,
             processedAt: n.processedAt,
           })),
         });

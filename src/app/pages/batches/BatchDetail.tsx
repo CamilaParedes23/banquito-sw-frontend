@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useParams, useNavigate } from 'react-router';
 
-import { ArrowLeft, AlertTriangle, FileText, AlertCircle, BarChart3, Activity } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, FileText, AlertCircle, BarChart3, Activity, Clock, RefreshCw } from 'lucide-react';
 
 import { StatusBadge } from '../../components/shared/StatusBadge';
 import { Progress } from '../../components/ui/progress';
@@ -28,6 +28,25 @@ import {
   UNKNOWN_ERROR_MESSAGE,
 } from '../../utils/batchErrorMessages';
 
+function parseDateMs(value?: string | null): number | null {
+  if (!value) return null;
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatDuration(ms: number): string {
+  const safeSeconds = Math.max(0, Math.floor(ms / 1000));
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const seconds = safeSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+  }
+
+  return `${minutes}m ${String(seconds).padStart(2, '0')}s`;
+}
+
 
 
 export function BatchDetail() {
@@ -36,9 +55,11 @@ export function BatchDetail() {
 
   const navigate = useNavigate();
 
-  const { batch, novedades, validationErrors, progress } = useBatchDetail(id);
+  const { batch, novedades, validationErrors, progress, fetchData } = useBatchDetail(id);
 
   const [activeTab, setActiveTab] = useState<'lines' | 'novedades' | 'comprobante' | 'settlement'>('lines');
+  const [clockTick, setClockTick] = useState(Date.now());
+  const [isRefreshingDetail, setIsRefreshingDetail] = useState(false);
 
   const [comprobanteData, setComprobanteData] = useState<any>(null);
 
@@ -139,6 +160,35 @@ export function BatchDetail() {
     if (tab === 'settlement') fetchSettlement();
   };
 
+  const shouldShowProgress =
+    Boolean(progress?.isAvailable) &&
+    !['RECHAZADO', 'FALLIDO', 'ANULADO'].includes(batch.status || '');
+
+  useEffect(() => {
+    if (!shouldShowProgress || !progress || progress.percent >= 100) return;
+    const timer = window.setInterval(() => setClockTick(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [shouldShowProgress, progress?.percent]);
+
+  const processingStartedAt = parseDateMs(batch.receivedAt);
+  const processingFinishedAt = progress?.percent && progress.percent >= 100
+    ? parseDateMs(progress.completedAt) ?? parseDateMs(progress.generatedAt) ?? parseDateMs(progress.updatedAt)
+    : null;
+  const processingElapsedMs = processingStartedAt
+    ? (processingFinishedAt ?? clockTick) - processingStartedAt
+    : null;
+  const processingTimeLabel = processingElapsedMs === null ? '--' : formatDuration(processingElapsedMs);
+
+  const handleRefreshDetail = async () => {
+    setIsRefreshingDetail(true);
+    try {
+      await fetchData();
+      setClockTick(Date.now());
+    } finally {
+      setIsRefreshingDetail(false);
+    }
+  };
+
 
 
   if (!batch.batchId) return <div className="p-20 text-center italic text-gray-400">Consultando PostgreSQL...</div>;
@@ -147,14 +197,6 @@ export function BatchDetail() {
   const shouldShowBatchRejectionMessage =
     Boolean(batchRejectionMessage) &&
     (batchRejectionMessage !== UNKNOWN_ERROR_MESSAGE || validationErrors.length === 0);
-
-  const shouldShowProgress =
-    Boolean(progress?.isAvailable) &&
-    !['RECHAZADO', 'FALLIDO', 'ANULADO'].includes(batch.status || '');
-
-
-
-
 
   return (
     <div className="space-y-8">
@@ -199,6 +241,29 @@ export function BatchDetail() {
                   {progress.percent >= 100 ? 'Procesamiento completo' : 'En ejecución'}
                 </p>
               </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-emerald-700" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-emerald-700">
+                    {progress.percent >= 100 ? 'Tiempo total de procesamiento' : 'Tiempo transcurrido'}
+                  </p>
+                  <p className="text-xl font-bold text-emerald-900">{processingTimeLabel}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleRefreshDetail}
+                disabled={isRefreshingDetail}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-sm font-bold text-emerald-700 shadow-sm transition-all hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <RefreshCw className={`w-4 h-4 ${isRefreshingDetail ? 'animate-spin' : ''}`} />
+                {isRefreshingDetail ? 'Actualizando...' : 'Recargar'}
+              </button>
             </div>
 
             <Progress
@@ -327,7 +392,9 @@ export function BatchDetail() {
                   cuentaDestino: l.destinationAccountNumber,
                   monto: l.amount,
                   estado: l.finalStatus,
+                  codigoError: l.errorCode,
                   mensajeError: l.errorMessage,
+                  tipoNovedad: l.noveltyType,
                 })) || []
               }} 
             />

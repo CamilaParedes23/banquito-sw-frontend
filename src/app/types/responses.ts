@@ -99,6 +99,7 @@ export interface BatchSummaryResponse {
   totalChargedAmount?: number | null;
   completedAt?: string | null;
   generatedAt?: string | null;
+  updatedAt?: string | null;
 }
 
 export interface LiquidarLoteResponse {
